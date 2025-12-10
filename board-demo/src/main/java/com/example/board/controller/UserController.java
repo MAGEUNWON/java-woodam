@@ -126,10 +126,6 @@ public class UserController {
     request.getSession(true);
 
     // 로그인 에러 메시지 처리
-    if (error != null) {
-      model.addAttribute("errorMessage", "아이디 또는 비밀번호가 올바르지 않습니다.");
-    }
-
     // 세션 만료 메시지 처리
     if (expired != null) {
       model.addAttribute("expiredMessage", "세션이 만료되었습니다. 다시 로그인해주세요.");
