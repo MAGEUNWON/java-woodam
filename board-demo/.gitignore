@@ -1,38 +1,4 @@
-# Gradle
-.gradle/
-build/
-!gradle/wrapper/gradle-wrapper.jar
-
-# IntelliJ IDEA
-.idea/
-*.iml
-*.ipr
-*.iws
-out/
-
-# VS Code
-.vscode/
-*.code-workspace
-
-# Java
-*.class
-*.jar
-*.war
-*.ear
-
-# Logs
-*.log
-logs/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Spring Boot
-*.pid
-
-# PostgreSQL 데이터 (호스트 마운트)
-postgres-data/
-
-# 업로드 파일
-uploads/
+# 민감정보 관리 (DB 연결 등)
+/src/main/resources/application.yml
+/src/main/resources/application-docker.yml
+.env

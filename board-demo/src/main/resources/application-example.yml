@@ -1,0 +1,10 @@
+# 예시용 Application 설정 파일 (Git에는 이 파일만 공유)
+spring:
+  datasource:
+    url: jdbc:postgresql://YOUR_DB_HOST:5432/YOUR_DB_NAME
+    username: YOUR_DB_USERNAME
+    password: YOUR_DB_PASSWORD
+  jpa:
+    hibernate:
+      ddl-auto: update
+# 기타

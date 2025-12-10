@@ -4,8 +4,8 @@
 spring:
   datasource:
     url: jdbc:postgresql://postgres:5432/boarddb
-    username: postgres
-    password: postgres
+    username: 
+    password: 
 
   jpa:
     hibernate:
