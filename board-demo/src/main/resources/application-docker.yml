@@ -1,0 +1,19 @@
+# Docker 환경용 설정
+# docker-compose의 환경변수로 오버라이드됨
+
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/boarddb
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+# 로깅 레벨 조정 (프로덕션 환경)
+logging:
+  level:
+    com.example.board: INFO
+    org.springframework.web: INFO
+    org.hibernate.SQL: INFO

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>댓글 수정</title>
+    <style>
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 15px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: 'Malgun Gothic', sans-serif;
+            box-sizing: border-box;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0,123,255,0.3);
+        }
+        textarea.form-control {
+            resize: vertical;
+            min-height: 120px;
+        }
+        .readonly-field {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+        .button-group {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            margin: 0 10px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+        .required {
+            color: #dc3545;
+        }
+        .meta-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💬 댓글 수정</h1>
+
+        <!-- 오류 메시지 표시 -->
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <!-- 댓글 정보 -->
+        <div class="meta-info">
+            <strong>작성자:</strong> <span th:text="${comment.author}">작성자명</span> |
+            <strong>작성일:</strong> <span th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm:ss')}">작성일시</span>
+            <span th:if="${comment.createdAt != comment.updatedAt}">
+                | <strong>최종수정:</strong> <span th:text="${#temporals.format(comment.updatedAt, 'yyyy-MM-dd HH:mm:ss')}">수정일시</span>
+            </span>
+            <br>
+            <span th:if="${comment.parent != null}" style="color: #007bff;">
+                ↳ 대댓글 (부모 댓글 ID: <span th:text="${comment.parent.id}"></span>)
+            </span>
+            <span th:unless="${comment.parent != null}" style="color: #28a745;">
+                📝 최상위 댓글
+            </span>
+        </div>
+
+        <form th:action="@{/comments/{id}/edit(id=${comment.id})}" method="post" th:object="${commentDto}" onsubmit="return validateForm()">
+            <div class="form-group">
+                <label for="author">작성자</label>
+                <input type="text" id="author" th:field="*{author}"
+                       class="form-control readonly-field" readonly
+                       title="작성자는 수정할 수 없습니다">
+                <small style="color: #666; font-size: 12px;">※ 작성자는 수정할 수 없습니다</small>
+            </div>
+
+            <div class="form-group">
+                <label for="content">내용 <span class="required">*</span></label>
+                <textarea id="content" th:field="*{content}" class="form-control" required
+                          placeholder="댓글 내용을 입력하세요 (최대 500자)" maxlength="500"></textarea>
+                <small style="color: #666; font-size: 12px;">
+                    <span id="charCount">0</span>/500자
+                </small>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary">💾 수정완료</button>
+                <a th:href="@{/posts/{id}(id=${comment.post.id})}" class="btn btn-secondary">❌ 취소</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        /**
+         * 폼 유효성 검사
+         */
+        function validateForm() {
+            const content = document.getElementById('content').value.trim();
+
+            if (!content) {
+                alert('댓글 내용을 입력해주세요.');
+                document.getElementById('content').focus();
+                return false;
+            }
+
+            if (content.length > 500) {
+                alert('댓글은 500자 이하로 작성해주세요.');
+                document.getElementById('content').focus();
+                return false;
+            }
+
+            return confirm('댓글을 수정하시겠습니까?');
+        }
+
+        /**
+         * 글자 수 카운터
+         */
+        function updateCharCount() {
+            const content = document.getElementById('content').value;
+            const charCount = document.getElementById('charCount');
+            charCount.textContent = content.length;
+
+            // 글자 수에 따른 색상 변경
+            if (content.length > 450) {
+                charCount.style.color = '#dc3545'; // 빨간색
+            } else if (content.length > 400) {
+                charCount.style.color = '#ffc107'; // 노란색
+            } else {
+                charCount.style.color = '#666'; // 기본 색상
+            }
+        }
+
+        /**
+         * 페이지 로드 시 실행
+         */
+        document.addEventListener('DOMContentLoaded', function() {
+            const contentTextarea = document.getElementById('content');
+
+            // 초기 글자 수 표시
+            updateCharCount();
+
+            // 입력 시마다 글자 수 업데이트
+            contentTextarea.addEventListener('input', updateCharCount);
+
+            // 텍스트 영역에 포커스
+            contentTextarea.focus();
+
+            // 커서를 텍스트 끝으로 이동
+            contentTextarea.setSelectionRange(contentTextarea.value.length, contentTextarea.value.length);
+        });
+    </script>
+</body>
+</html>

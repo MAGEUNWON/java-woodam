@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 - 우담</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+            background: linear-gradient(180deg, #E3F2FD 0%, #FFEBEE 50%, #D7CCC8 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 눈 내리는 효과 */
+        .snowflakes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            color: white;
+            font-size: 1em;
+            animation: fall linear infinite;
+            opacity: 0.7;
+            text-shadow: 0 0 5px rgba(255,255,255,0.8);
+        }
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
+
+        .login-container {
+            background: linear-gradient(135deg, #BCAAA4 0%, #A1887F 100%);
+            border: 4px solid #8D6E63;
+            border-radius: 16px;
+            padding: 48px 40px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.2);
+            animation: slideUp 0.6s ease-out;
+            position: relative;
+            z-index: 10;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #FFAB91 0%, #FF7043 100%);
+            border: 3px solid #E64A19;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 0 #D84315;
+            text-decoration: none;
+        }
+
+        .logo-icon i {
+            color: white;
+            font-size: 28px;
+        }
+
+        .form-title {
+            font-family: 'Gaegu', cursive;
+            font-size: 32px;
+            font-weight: 700;
+            color: #5D4037;
+            margin-bottom: 8px;
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.3);
+        }
+
+        .form-subtitle {
+            color: #6D4C41;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #5D4037;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 16px;
+            font-weight: 400;
+            color: #5D4037;
+            background: rgba(255, 255, 255, 0.9);
+            border: 3px solid #8D6E63;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .form-control:focus {
+            border-color: #FF7043;
+            box-shadow: 0 0 0 4px rgba(255, 112, 67, 0.2);
+        }
+
+        .form-control::placeholder {
+            color: #A1887F;
+        }
+
+        .form-control.is-invalid {
+            border-color: #ef4444;
+            background-color: #fef2f2;
+        }
+
+        .form-control.is-invalid:focus {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+        }
+
+        .error-message {
+            color: #dc2626;
+            font-size: 13px;
+            font-weight: 500;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .error-message i {
+            font-size: 12px;
+        }
+
+        .global-error {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            border: 2px solid #fecaca;
+            color: #dc2626;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .global-error i {
+            color: #ef4444;
+            font-size: 16px;
+        }
+
+        .info-message {
+            background: linear-gradient(135deg, #FFF9C4, #FFE082);
+            border: 2px solid #FFB300;
+            color: #5D4037;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-message i {
+            color: #FF8F00;
+            font-size: 16px;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 18px 24px;
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(135deg, #FFAB91 0%, #FF7043 100%);
+            border: none;
+            border-bottom: 4px solid #E64A19;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            box-shadow: 0 4px 0 #D84315;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #D84315;
+        }
+
+        .btn-login:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #D84315;
+        }
+
+        .link-container {
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 2px dashed #8D6E63;
+        }
+
+        .link-signup {
+            color: #FF7043;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: color 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .link-signup:hover {
+            color: #E64A19;
+        }
+
+        .link-back {
+            color: #6D4C41;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .link-back:hover {
+            color: #FF7043;
+        }
+
+        .link-forgot {
+            color: #8D6E63;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .link-forgot:hover {
+            color: #FF7043;
+        }
+
+        .required {
+            color: #ef4444;
+            margin-left: 2px;
+        }
+
+        /* 모달 스타일 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(93, 64, 55, 0.8);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #BCAAA4 0%, #A1887F 100%);
+            border: 4px solid #8D6E63;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.2);
+            animation: modalSlideUp 0.4s ease-out;
+        }
+
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #FFAB91, #FF7043);
+            border: 3px solid #E64A19;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            box-shadow: 0 4px 0 #D84315;
+        }
+
+        .modal-icon i {
+            color: white;
+            font-size: 36px;
+        }
+
+        .modal-title {
+            font-family: 'Gaegu', cursive;
+            font-size: 28px;
+            font-weight: 700;
+            color: #5D4037;
+            margin-bottom: 12px;
+        }
+
+        .modal-message {
+            font-size: 16px;
+            color: #6D4C41;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .modal-username {
+            font-size: 18px;
+            font-weight: 600;
+            color: #FF7043;
+            margin-bottom: 24px;
+        }
+
+        .modal-hint {
+            font-size: 14px;
+            color: #8D6E63;
+            margin-bottom: 28px;
+        }
+
+        .btn-modal-confirm {
+            width: 100%;
+            padding: 16px 24px;
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(135deg, #FFAB91 0%, #FF7043 100%);
+            border: none;
+            border-bottom: 4px solid #E64A19;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            box-shadow: 0 4px 0 #D84315;
+        }
+
+        .btn-modal-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #D84315;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 480px) {
+            body {
+                padding: 16px;
+            }
+
+            .login-container {
+                padding: 32px 24px;
+            }
+
+            .form-title {
+                font-size: 28px;
+            }
+
+            .form-subtitle {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 눈 내리는 효과 -->
+    <div class="snowflakes" aria-hidden="true">
+        <div class="snowflake" style="left: 10%; animation-duration: 10s; animation-delay: 0s;">❅</div>
+        <div class="snowflake" style="left: 30%; animation-duration: 13s; animation-delay: 1s;">❆</div>
+        <div class="snowflake" style="left: 50%; animation-duration: 9s; animation-delay: 2s;">❅</div>
+        <div class="snowflake" style="left: 70%; animation-duration: 14s; animation-delay: 0.5s;">❆</div>
+        <div class="snowflake" style="left: 90%; animation-duration: 11s; animation-delay: 1.5s;">❅</div>
+    </div>
+
+    <div class="login-container">
+        <!-- 로고 섹션 -->
+        <div class="logo-section">
+            <a href="/" class="logo-icon" title="홈으로">
+                <i class="fas fa-home"></i>
+            </a>
+            <h1 class="form-title">우담 로그인</h1>
+            <p class="form-subtitle">우리들의 담소에 오신 걸 환영해요 ☕</p>
+        </div>
+
+        <!-- Spring Security form login -->
+        <form th:action="@{/login}" method="post">
+
+            <!-- 로그인 에러 메시지 (Spring Security) -->
+            <div th:if="${param.error}" class="global-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>아이디 또는 비밀번호가 올바르지 않습니다.</div>
+            </div>
+
+            <!-- 세션 만료 메시지 -->
+            <div th:if="${param.expired}" class="info-message">
+                <i class="fas fa-clock"></i>
+                <div>세션이 만료되었습니다. 다시 로그인해주세요.</div>
+            </div>
+
+            <!-- 컨트롤러에서 전달한 에러 메시지 -->
+            <div th:if="${errorMessage}" class="global-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div th:text="${errorMessage}">에러 메시지</div>
+            </div>
+
+            <!-- 아이디 입력 -->
+            <div class="form-group">
+                <label for="username" class="form-label">
+                    아이디 <span class="required">*</span>
+                </label>
+                <input type="text"
+                       class="form-control"
+                       id="username"
+                       name="username"
+                       placeholder="아이디를 입력하세요"
+                       autocomplete="username"
+                       required>
+            </div>
+
+            <!-- 비밀번호 입력 -->
+            <div class="form-group">
+                <label for="password" class="form-label">
+                    비밀번호 <span class="required">*</span>
+                </label>
+                <input type="password"
+                       class="form-control"
+                       id="password"
+                       name="password"
+                       placeholder="비밀번호를 입력하세요"
+                       autocomplete="current-password"
+                       required>
+            </div>
+
+            <!-- 로그인 버튼 -->
+            <button type="submit" class="btn-login" id="submitBtn">
+                <i class="fas fa-door-open"></i> 오두막 들어가기
+            </button>
+        </form>
+
+        <!-- 링크 -->
+        <div class="link-container">
+            <a href="/signup" class="link-signup">
+                <i class="fas fa-user-plus"></i>
+                아직 계정이 없으신가요? 이웃 되기
+            </a>
+            <br>
+            <a href="/password-reset" class="link-forgot">
+                <i class="fas fa-key"></i>
+                비밀번호를 잊으셨나요?
+            </a>
+            <br>
+            <a href="/" class="link-back">
+                <i class="fas fa-home"></i>
+                홈으로 돌아가기
+            </a>
+        </div>
+    </div>
+
+    <!-- 회원가입 성공 모달 -->
+    <div th:if="${signupSuccess}" class="modal-overlay" id="signupModal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <h2 class="modal-title">회원가입 완료! 🎉</h2>
+            <p class="modal-message">회원가입이 성공적으로 완료되었습니다.</p>
+            <p class="modal-username" th:text="${signupUsername}">사용자명</p>
+            <p class="modal-hint">아래 버튼을 눌러 로그인해주세요.</p>
+            <button type="button" class="btn-modal-confirm" onclick="closeSignupModal()">
+                확인
+            </button>
+        </div>
+    </div>
+
+    <!-- 비밀번호 변경 성공 모달 -->
+    <div th:if="${passwordResetSuccess}" class="modal-overlay" id="passwordResetModal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fas fa-key"></i>
+            </div>
+            <h2 class="modal-title">비밀번호 변경 완료! 🔐</h2>
+            <p class="modal-message">비밀번호가 성공적으로 변경되었습니다.</p>
+            <p class="modal-hint">새 비밀번호로 로그인해주세요.</p>
+            <button type="button" class="btn-modal-confirm" onclick="closePasswordResetModal()">
+                확인
+            </button>
+        </div>
+    </div>
+
+    <script th:if="${signupSuccess}">
+        function closeSignupModal() {
+            document.getElementById('signupModal').style.display = 'none';
+        }
+
+        // ESC 키로 모달 닫기
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSignupModal();
+            }
+        });
+
+        // 모달 외부 클릭 시 닫기
+        document.getElementById('signupModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSignupModal();
+            }
+        });
+    </script>
+
+    <script th:if="${passwordResetSuccess}">
+        function closePasswordResetModal() {
+            document.getElementById('passwordResetModal').style.display = 'none';
+        }
+
+        // ESC 키로 모달 닫기
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closePasswordResetModal();
+            }
+        });
+
+        // 모달 외부 클릭 시 닫기
+        document.getElementById('passwordResetModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePasswordResetModal();
+            }
+        });
+    </script>
+
+    <!-- 폼 중복 제출 방지 -->
+    <script>
+        (function() {
+            const form = document.querySelector('form');
+            const submitBtn = document.getElementById('submitBtn');
+            let isSubmitting = false;
+
+            form.addEventListener('submit', function(e) {
+                if (isSubmitting) {
+                    e.preventDefault();
+                    return false;
+                }
+                isSubmitting = true;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 처리 중...';
+            });
+
+            // 페이지 로드 시 버튼 상태 초기화 (뒤로가기 시)
+            window.addEventListener('pageshow', function(e) {
+                if (e.persisted) {
+                    isSubmitting = false;
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-door-open"></i> 오두막 들어가기';
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

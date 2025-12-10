@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>우담 - 우리들의 담소</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        /* ========================================
+           마인크래프트 스타일 픽셀아트 버전
+           ======================================== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Noto Sans KR', sans-serif; overflow-x: hidden; background: #78A7FF; }
+
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; padding: 12px 24px;
+            display: flex; justify-content: space-between; align-items: center; z-index: 100;
+            background: rgba(139, 90, 43, 0.95); border-bottom: 4px solid #5D3A1A;
+        }
+        .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .logo-icon { width: 40px; height: 40px; background: #4CAF50; border: 3px solid #2E7D32; display: flex; align-items: center; justify-content: center; }
+        .logo-icon i { color: white; font-size: 18px; }
+        .logo-text { font-family: 'Press Start 2P', cursive; font-size: 16px; color: #FFE082; text-shadow: 2px 2px 0 #5D3A1A; }
+        .nav-links { display: flex; gap: 8px; align-items: center; }
+        .nav-link { padding: 10px 16px; text-decoration: none; font-weight: 700; font-size: 13px; border: none; cursor: pointer; background: #6B8E23; color: white; border-bottom: 3px solid #3D5214; font-family: 'Noto Sans KR', sans-serif; transition: all 0.1s; }
+        .nav-link:hover { transform: translateY(-2px); background: #7BA428; }
+        .nav-link-primary { background: #E65100; border-bottom-color: #8B3000; }
+        .nav-link-primary:hover { background: #FF6D00; }
+        .user-greeting { color: #FFE082; font-size: 12px; font-weight: 700; padding: 8px 12px; background: rgba(0,0,0,0.3); }
+        .user-greeting strong { color: #FFEB3B; }
+
+        .hero { min-height: 100vh; position: relative; display: flex; flex-direction: column; overflow: hidden; }
+        .pixel-sky { position: absolute; top: 0; left: 0; right: 0; height: 55%; background: linear-gradient(180deg, #78A7FF 0%, #9AC4FF 50%, #D4E8FF 100%); }
+
+        .pixel-clouds { position: absolute; top: 80px; left: 0; right: 0; height: 150px; }
+        .pixel-cloud { position: absolute; background: white; animation: cloud-move 30s linear infinite; }
+        .pixel-cloud-1 { width: 120px; height: 40px; top: 20px; left: 10%; box-shadow: 20px -20px 0 white, 40px -20px 0 white, 60px -20px 0 white, 40px -40px 0 white, 80px 0 0 white; }
+        .pixel-cloud-2 { width: 80px; height: 30px; top: 60px; left: 55%; animation-delay: -10s; box-shadow: 15px -15px 0 white, 30px -15px 0 white, 45px -15px 0 white, 60px 0 0 white; }
+        .pixel-cloud-3 { width: 100px; height: 35px; top: 100px; left: 30%; animation-delay: -20s; box-shadow: 18px -18px 0 white, 36px -18px 0 white, 54px -18px 0 white, 72px 0 0 white; }
+        @keyframes cloud-move { 0% { transform: translateX(0); } 100% { transform: translateX(100px); } }
+
+        .pixel-sun { position: absolute; top: 80px; right: 12%; width: 60px; height: 60px; background: #FFEB3B; box-shadow: 0 0 0 4px #FFC107, -20px 0 0 8px #FFEB3B, 20px 0 0 8px #FFEB3B, 0 -20px 0 8px #FFEB3B, 0 20px 0 8px #FFEB3B; }
+
+        .pixel-forest-back { position: absolute; bottom: 38%; left: 0; right: 0; height: 200px; display: flex; justify-content: center; align-items: flex-end; }
+        .pixel-tree-back { position: relative; margin: 0 -10px; }
+        .pixel-tree-back .leaves { width: 60px; height: 80px; background: #2D5016; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); }
+        .pixel-tree-back .leaves::before { content: ''; position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); width: 70px; height: 50px; background: #3D6B1E; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); }
+        .pixel-tree-back .trunk { width: 16px; height: 40px; background: #5D4037; margin: 0 auto; margin-top: -10px; }
+
+        .pixel-ground { position: absolute; bottom: 0; left: 0; right: 0; height: 42%; }
+        .grass-top { height: 20px; background: #4CAF50; border-top: 4px solid #66BB6A; }
+        .dirt { height: calc(100% - 20px); background: repeating-linear-gradient(0deg, #8B6914 0px, #8B6914 20px, #7A5B0F 20px, #7A5B0F 40px); }
+
+        .pixel-cabin-container { position: absolute; bottom: 35%; left: 50%; transform: translateX(-50%); z-index: 10; }
+        .pixel-cabin { position: relative; width: 240px; height: 180px; }
+        .pixel-roof { position: absolute; top: 0; left: -30px; width: 300px; height: 80px; background: #6D4C41; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); border: 4px solid #5D4037; }
+        .pixel-roof::before { content: ''; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 240px; height: 60px; background: repeating-linear-gradient(90deg, #8D6E63 0px, #8D6E63 30px, #6D4C41 30px, #6D4C41 60px); clip-path: polygon(50% 0%, 10% 100%, 90% 100%); }
+        .pixel-chimney { position: absolute; top: -30px; right: 50px; width: 30px; height: 50px; background: #757575; border: 3px solid #616161; }
+        .pixel-chimney::before { content: ''; position: absolute; top: -8px; left: -3px; width: 36px; height: 8px; background: #9E9E9E; }
+        .pixel-smoke { position: absolute; top: -60px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .smoke-puff { width: 12px; height: 12px; background: rgba(200,200,200,0.8); animation: smoke-float 2s ease-out infinite; }
+        .smoke-puff:nth-child(2) { animation-delay: 0.5s; width: 16px; height: 16px; }
+        .smoke-puff:nth-child(3) { animation-delay: 1s; width: 10px; height: 10px; }
+        @keyframes smoke-float { 0% { opacity: 0.8; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-40px) scale(1.5); } }
+
+        .pixel-cabin-body { position: absolute; bottom: 0; left: 0; width: 240px; height: 100px; background: #D7A74C; border: 4px solid #B8860B; }
+        .pixel-cabin-body::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: repeating-linear-gradient(90deg, transparent 0px, transparent 38px, #C69C3F 38px, #C69C3F 40px); }
+        .pixel-door { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 40px; height: 70px; background: #8B4513; border: 3px solid #5D3A1A; }
+        .pixel-door::before { content: ''; position: absolute; top: 30px; right: 8px; width: 8px; height: 8px; background: #FFD700; border: 2px solid #B8860B; }
+        .pixel-window { position: absolute; top: 20px; width: 35px; height: 35px; background: #81D4FA; border: 4px solid #5D4037; }
+        .pixel-window.left { left: 25px; }
+        .pixel-window.right { right: 25px; }
+        .pixel-window::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 4px; background: #5D4037; transform: translateY(-50%); }
+        .pixel-window::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; background: #5D4037; transform: translateX(-50%); }
+        .window-light { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,236,179,0.5); animation: light-flicker 3s ease-in-out infinite; }
+        @keyframes light-flicker { 0%, 100% { opacity: 0.5; } 50% { opacity: 0.7; } }
+
+        .pixel-characters { position: absolute; bottom: 32%; left: 50%; transform: translateX(-50%); display: flex; gap: 40px; z-index: 5; }
+        .pixel-character { width: 30px; height: 50px; position: relative; animation: walk 0.5s steps(2) infinite; }
+        .char-head { width: 20px; height: 20px; position: absolute; top: 0; left: 50%; transform: translateX(-50%); border: 2px solid rgba(0,0,0,0.3); }
+        .char-body { width: 16px; height: 18px; position: absolute; top: 18px; left: 50%; transform: translateX(-50%); }
+        .char-legs { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); display: flex; gap: 2px; }
+        .char-leg { width: 6px; height: 14px; }
+        .char-steve .char-head { background: #D4A574; }
+        .char-steve .char-body { background: #00BFFF; }
+        .char-steve .char-leg { background: #1565C0; }
+        .char-alex .char-head { background: #D4A574; }
+        .char-alex .char-body { background: #8BC34A; }
+        .char-alex .char-leg { background: #5D4037; }
+        .char-green .char-head { background: #FF9800; }
+        .char-green .char-body { background: #7CB342; }
+        .char-green .char-leg { background: #5D4037; }
+        @keyframes walk { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+        .pixel-character:nth-child(1) { animation-delay: 0s; transform: translateX(-60px); }
+        .pixel-character:nth-child(2) { animation-delay: 0.2s; transform: translateX(-20px); }
+        .pixel-character:nth-child(3) { animation-delay: 0.4s; transform: translateX(100px); }
+
+        .pixel-trees-front { position: absolute; bottom: 30%; left: 0; right: 0; display: flex; justify-content: space-between; padding: 0 3%; z-index: 2; }
+        .pixel-tree-front { position: relative; }
+        .pixel-tree-front .trunk { width: 24px; height: 100px; background: #6D4C41; margin: 0 auto; border: 2px solid #5D4037; }
+        .pixel-tree-front .leaves-container { position: absolute; top: 0; left: 50%; transform: translateX(-50%); }
+        .pixel-tree-front .leaves-row { display: flex; justify-content: center; }
+        .pixel-tree-front .leaf-block { width: 20px; height: 20px; background: #4CAF50; border: 1px solid #388E3C; }
+
+        .hero-content { position: relative; z-index: 20; text-align: center; padding: 60px 20px 80px; margin-top: auto; background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.7) 100%); }
+        .hero-badge { display: inline-block; padding: 8px 16px; background: #4CAF50; color: white; font-family: 'Press Start 2P', cursive; font-size: 10px; margin-bottom: 20px; border: 3px solid #2E7D32; box-shadow: 4px 4px 0 rgba(0,0,0,0.3); }
+        .hero-title { font-family: 'Press Start 2P', cursive; font-size: 28px; color: #FFEB3B; text-shadow: 3px 3px 0 #5D4037; margin-bottom: 20px; line-height: 1.5; }
+        .hero-description { font-size: 16px; color: white; line-height: 1.8; margin-bottom: 30px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
+        .hero-buttons { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+        .btn { padding: 15px 25px; text-decoration: none; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; gap: 10px; border: none; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; transition: all 0.1s; }
+        .btn-primary { background: #4CAF50; color: white; border-bottom: 4px solid #2E7D32; box-shadow: 0 4px 0 #1B5E20; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #1B5E20; }
+        .btn-secondary { background: #FF9800; color: white; border-bottom: 4px solid #E65100; box-shadow: 0 4px 0 #BF360C; }
+        .btn-secondary:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #BF360C; }
+
+        .features { padding: 60px 20px; background: #5D4037; border-top: 8px solid #3E2723; }
+        .features-container { max-width: 1000px; margin: 0 auto; }
+        .features-title { text-align: center; font-family: 'Press Start 2P', cursive; font-size: 18px; color: #FFEB3B; text-shadow: 2px 2px 0 #3E2723; margin-bottom: 10px; }
+        .features-subtitle { text-align: center; font-size: 14px; color: #BCAAA4; margin-bottom: 40px; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .feature-card { background: #8D6E63; padding: 25px; text-align: center; border: 4px solid #6D4C41; box-shadow: 6px 6px 0 rgba(0,0,0,0.3); transition: transform 0.2s; }
+        .feature-card:hover { transform: translate(-3px, -3px); box-shadow: 9px 9px 0 rgba(0,0,0,0.3); }
+        .feature-emoji { font-size: 36px; margin-bottom: 12px; display: block; }
+        .feature-title { font-family: 'Press Start 2P', cursive; font-size: 11px; color: #FFEB3B; margin-bottom: 10px; line-height: 1.5; }
+        .feature-description { font-size: 13px; color: #D7CCC8; line-height: 1.6; }
+
+        .footer { padding: 25px 20px; text-align: center; background: #3E2723; color: #BCAAA4; font-size: 12px; border-top: 4px solid #5D4037; }
+        .footer i { color: #4CAF50; }
+
+        @media (max-width: 768px) {
+            .navbar { padding: 10px 12px; }
+            .logo-text { font-size: 12px; }
+            .hero-title { font-size: 18px; }
+            .pixel-cabin { transform: scale(0.7); }
+            .pixel-cabin-container { bottom: 38%; }
+            .nav-link { padding: 8px 10px; font-size: 11px; }
+            .pixel-tree-front { transform: scale(0.6); }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo">
+            <div class="logo-icon"><i class="fas fa-home"></i></div>
+            <span class="logo-text">우담</span>
+        </a>
+        <div class="nav-links">
+            <th:block sec:authorize="!isAuthenticated()">
+                <a href="/login" class="nav-link">로그인</a>
+                <a href="/signup" class="nav-link nav-link-primary">회원가입</a>
+            </th:block>
+            <th:block sec:authorize="isAuthenticated()">
+                <span class="user-greeting">🏠 <strong sec:authentication="principal.name">사용자</strong>님</span>
+                <a href="/posts" class="nav-link">게시판</a>
+                <a href="/mypage" class="nav-link">마이페이지</a>
+                <form th:action="@{/logout}" method="post" style="display: inline;">
+                    <button type="submit" class="nav-link">나가기</button>
+                </form>
+            </th:block>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="pixel-sky"></div>
+        <div class="pixel-sun"></div>
+        <div class="pixel-clouds">
+            <div class="pixel-cloud pixel-cloud-1"></div>
+            <div class="pixel-cloud pixel-cloud-2"></div>
+            <div class="pixel-cloud pixel-cloud-3"></div>
+        </div>
+
+        <div class="pixel-forest-back">
+            <div class="pixel-tree-back" style="transform: scale(0.9) translateX(-180px);"><div class="leaves"></div><div class="trunk"></div></div>
+            <div class="pixel-tree-back" style="transform: scale(1.1) translateX(-80px);"><div class="leaves"></div><div class="trunk"></div></div>
+            <div class="pixel-tree-back" style="transform: scale(0.95) translateX(80px);"><div class="leaves"></div><div class="trunk"></div></div>
+            <div class="pixel-tree-back" style="transform: scale(0.85) translateX(180px);"><div class="leaves"></div><div class="trunk"></div></div>
+        </div>
+
+        <div class="pixel-ground">
+            <div class="grass-top"></div>
+            <div class="dirt"></div>
+        </div>
+
+        <div class="pixel-cabin-container">
+            <div class="pixel-cabin">
+                <div class="pixel-chimney">
+                    <div class="pixel-smoke">
+                        <div class="smoke-puff"></div>
+                        <div class="smoke-puff"></div>
+                        <div class="smoke-puff"></div>
+                    </div>
+                </div>
+                <div class="pixel-roof"></div>
+                <div class="pixel-cabin-body">
+                    <div class="pixel-window left"><div class="window-light"></div></div>
+                    <div class="pixel-window right"><div class="window-light"></div></div>
+                    <div class="pixel-door"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pixel-characters">
+            <div class="pixel-character char-steve"><div class="char-head"></div><div class="char-body"></div><div class="char-legs"><div class="char-leg"></div><div class="char-leg"></div></div></div>
+            <div class="pixel-character char-alex"><div class="char-head"></div><div class="char-body"></div><div class="char-legs"><div class="char-leg"></div><div class="char-leg"></div></div></div>
+            <div class="pixel-character char-green"><div class="char-head"></div><div class="char-body"></div><div class="char-legs"><div class="char-leg"></div><div class="char-leg"></div></div></div>
+        </div>
+
+        <div class="pixel-trees-front">
+            <div class="pixel-tree-front">
+                <div class="leaves-container">
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                </div>
+                <div class="trunk"></div>
+            </div>
+            <div class="pixel-tree-front">
+                <div class="leaves-container">
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                </div>
+                <div class="trunk"></div>
+            </div>
+        </div>
+
+        <div class="hero-content">
+            <div class="hero-badge">WELCOME TO WOODAM</div>
+            <h1 class="hero-title">오늘 하루<br>어땠어요?</h1>
+            <p class="hero-description">숲속 오두막에서 동료들과 옹기종기 모여<br>따뜻한 이야기를 나눠보세요 ☕</p>
+            <div class="hero-buttons">
+                <a href="/posts" class="btn btn-primary"><i class="fas fa-door-open"></i> 오두막 들어가기</a>
+                <th:block sec:authorize="!isAuthenticated()">
+                    <a href="/signup" class="btn btn-secondary"><i class="fas fa-user-plus"></i> 이웃 되기</a>
+                </th:block>
+                <th:block sec:authorize="isAuthenticated()">
+                    <a href="/posts/write" class="btn btn-secondary"><i class="fas fa-pen"></i> 이야기 남기기</a>
+                </th:block>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="features-container">
+            <h2 class="features-title">우담에서는요</h2>
+            <p class="features-subtitle">숲속 오두막에서 동료들과 함께하는 시간</p>
+            <div class="features-grid">
+                <div class="feature-card"><span class="feature-emoji">💬</span><h3 class="feature-title">속 시원한<br>이야기</h3><p class="feature-description">오늘 있었던 일<br>마음껏 털어놓으세요</p></div>
+                <div class="feature-card"><span class="feature-emoji">🤗</span><h3 class="feature-title">따뜻한<br>공감</h3><p class="feature-description">동료들의 따뜻한<br>위로를 받아요</p></div>
+                <div class="feature-card"><span class="feature-emoji">🔒</span><h3 class="feature-title">우리끼리만</h3><p class="feature-description">안전한 공간에서<br>편하게 이야기해요</p></div>
+                <div class="feature-card"><span class="feature-emoji">☕</span><h3 class="feature-title">잠깐의<br>여유</h3><p class="feature-description">바쁜 하루 중 잠깐<br>쉬어가세요</p></div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>© 2024 우담 · 숲속 오두막에서 나누는 우리들의 담소 <i class="fas fa-cube"></i></p>
+    </footer>
+</body>
+</html>

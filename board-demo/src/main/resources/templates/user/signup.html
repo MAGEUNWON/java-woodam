@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 - 우담</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+            background: linear-gradient(180deg, #E3F2FD 0%, #FFEBEE 50%, #D7CCC8 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 눈 내리는 효과 */
+        .snowflakes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            color: white;
+            font-size: 1em;
+            animation: fall linear infinite;
+            opacity: 0.7;
+            text-shadow: 0 0 5px rgba(255,255,255,0.8);
+        }
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
+
+        .signup-container {
+            background: linear-gradient(135deg, #BCAAA4 0%, #A1887F 100%);
+            border: 4px solid #8D6E63;
+            border-radius: 16px;
+            padding: 48px 40px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.2);
+            animation: slideUp 0.6s ease-out;
+            position: relative;
+            z-index: 10;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #FFAB91 0%, #FF7043 100%);
+            border: 3px solid #E64A19;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 0 #D84315;
+            text-decoration: none;
+        }
+
+        .logo-icon i {
+            color: white;
+            font-size: 28px;
+        }
+
+        .form-title {
+            font-family: 'Gaegu', cursive;
+            font-size: 32px;
+            font-weight: 700;
+            color: #5D4037;
+            margin-bottom: 8px;
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.3);
+        }
+
+        .form-subtitle {
+            color: #6D4C41;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #5D4037;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 16px;
+            font-weight: 400;
+            color: #5D4037;
+            background: rgba(255, 255, 255, 0.9);
+            border: 3px solid #8D6E63;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .form-control:focus {
+            border-color: #FF7043;
+            box-shadow: 0 0 0 4px rgba(255, 112, 67, 0.2);
+        }
+
+        .form-control::placeholder {
+            color: #A1887F;
+        }
+
+        .form-control.is-invalid {
+            border-color: #ef4444;
+            background-color: #fef2f2;
+        }
+
+        .form-control.is-invalid:focus {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+        }
+
+        .error-message {
+            color: #dc2626;
+            font-size: 13px;
+            font-weight: 500;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .error-message i {
+            font-size: 12px;
+        }
+
+        .global-error {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            border: 2px solid #fecaca;
+            color: #dc2626;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .global-error i {
+            color: #ef4444;
+            font-size: 16px;
+        }
+
+        .btn-signup {
+            width: 100%;
+            padding: 18px 24px;
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(135deg, #FFAB91 0%, #FF7043 100%);
+            border: none;
+            border-bottom: 4px solid #E64A19;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            box-shadow: 0 4px 0 #D84315;
+        }
+
+        .btn-signup:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #D84315;
+        }
+
+        .btn-signup:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #D84315;
+        }
+
+        .link-container {
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 2px dashed #8D6E63;
+        }
+
+        .link-back {
+            color: #6D4C41;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .link-back:hover {
+            color: #FF7043;
+        }
+
+        .required {
+            color: #ef4444;
+            margin-left: 2px;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 480px) {
+            body {
+                padding: 16px;
+            }
+
+            .signup-container {
+                padding: 32px 24px;
+            }
+
+            .form-title {
+                font-size: 28px;
+            }
+
+            .form-subtitle {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 눈 내리는 효과 -->
+    <div class="snowflakes" aria-hidden="true">
+        <div class="snowflake" style="left: 10%; animation-duration: 10s; animation-delay: 0s;">❅</div>
+        <div class="snowflake" style="left: 30%; animation-duration: 13s; animation-delay: 1s;">❆</div>
+        <div class="snowflake" style="left: 50%; animation-duration: 9s; animation-delay: 2s;">❅</div>
+        <div class="snowflake" style="left: 70%; animation-duration: 14s; animation-delay: 0.5s;">❆</div>
+        <div class="snowflake" style="left: 90%; animation-duration: 11s; animation-delay: 1.5s;">❅</div>
+    </div>
+
+    <div class="signup-container">
+        <!-- 로고 섹션 -->
+        <div class="logo-section">
+            <a href="/" class="logo-icon" title="홈으로">
+                <i class="fas fa-home"></i>
+            </a>
+            <h1 class="form-title">우담 가입하기</h1>
+            <p class="form-subtitle">함께 이야기 나눌 준비 되셨나요? 🏡</p>
+        </div>
+
+        <form th:action="@{/signup}" th:object="${signupRequestDto}" method="post">
+
+            <!-- 전역 에러 메시지 -->
+            <div th:if="${#fields.hasGlobalErrors()}" class="global-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <div th:each="error : ${#fields.globalErrors()}" th:text="${error}"></div>
+                </div>
+            </div>
+
+            <!-- 아이디 입력 -->
+            <div class="form-group">
+                <label for="username" class="form-label">
+                    아이디 <span class="required">*</span>
+                </label>
+                <input type="text"
+                       class="form-control"
+                       th:class="${#fields.hasErrors('username')} ? 'form-control is-invalid' : 'form-control'"
+                       id="username"
+                       th:field="*{username}"
+                       placeholder="3~20자의 아이디를 입력하세요"
+                       autocomplete="username">
+                <div th:if="${#fields.hasErrors('username')}" class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div th:each="error : ${#fields.errors('username')}" th:text="${error}"></div>
+                </div>
+            </div>
+
+            <!-- 비밀번호 입력 -->
+            <div class="form-group">
+                <label for="password" class="form-label">
+                    비밀번호 <span class="required">*</span>
+                </label>
+                <input type="password"
+                       class="form-control"
+                       th:class="${#fields.hasErrors('password')} ? 'form-control is-invalid' : 'form-control'"
+                       id="password"
+                       th:field="*{password}"
+                       placeholder="6~50자의 비밀번호를 입력하세요"
+                       autocomplete="new-password">
+                <div th:if="${#fields.hasErrors('password')}" class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div th:each="error : ${#fields.errors('password')}" th:text="${error}"></div>
+                </div>
+            </div>
+
+            <!-- 비밀번호 확인 입력 -->
+            <div class="form-group">
+                <label for="passwordConfirm" class="form-label">
+                    비밀번호 확인 <span class="required">*</span>
+                </label>
+                <input type="password"
+                       class="form-control"
+                       th:class="${#fields.hasErrors('passwordConfirm')} ? 'form-control is-invalid' : 'form-control'"
+                       id="passwordConfirm"
+                       th:field="*{passwordConfirm}"
+                       placeholder="비밀번호를 다시 입력하세요"
+                       autocomplete="new-password">
+                <div th:if="${#fields.hasErrors('passwordConfirm')}" class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div th:each="error : ${#fields.errors('passwordConfirm')}" th:text="${error}"></div>
+                </div>
+            </div>
+
+            <!-- 이름 입력 -->
+            <div class="form-group">
+                <label for="name" class="form-label">
+                    이름 <span class="required">*</span>
+                </label>
+                <input type="text"
+                       class="form-control"
+                       th:class="${#fields.hasErrors('name')} ? 'form-control is-invalid' : 'form-control'"
+                       id="name"
+                       th:field="*{name}"
+                       placeholder="1~20자의 이름을 입력하세요"
+                       autocomplete="name">
+                <div th:if="${#fields.hasErrors('name')}" class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div th:each="error : ${#fields.errors('name')}" th:text="${error}"></div>
+                </div>
+            </div>
+
+            <!-- 회원가입 버튼 -->
+            <button type="submit" class="btn-signup" id="submitBtn">
+                <i class="fas fa-user-plus"></i> 이웃 되기
+            </button>
+        </form>
+
+        <!-- 링크 -->
+        <div class="link-container">
+            <a href="/" class="link-back">
+                <i class="fas fa-home"></i>
+                홈으로 돌아가기
+            </a>
+        </div>
+    </div>
+
+    <!-- 폼 중복 제출 방지 -->
+    <script>
+        (function() {
+            const form = document.querySelector('form');
+            const submitBtn = document.getElementById('submitBtn');
+            let isSubmitting = false;
+
+            form.addEventListener('submit', function(e) {
+                if (isSubmitting) {
+                    e.preventDefault();
+                    return false;
+                }
+                isSubmitting = true;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 처리 중...';
+            });
+
+            // 페이지 로드 시 버튼 상태 초기화 (뒤로가기 시)
+            window.addEventListener('pageshow', function(e) {
+                if (e.persisted) {
+                    isSubmitting = false;
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> 이웃 되기';
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

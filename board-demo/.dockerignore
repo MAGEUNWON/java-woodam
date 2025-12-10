@@ -1,0 +1,45 @@
+# Build output
+build/
+bin/
+out/
+target/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# Gradle
+.gradle/
+gradle/wrapper/gradle-wrapper.jar
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Data
+data/
+*.db
+*.mv.db
+*.trace.db
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp
+*.tmp
+*.bak
+*.swp

@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>우담 - 우리들의 담소</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <style>
+        /* ========================================
+           겨울 숲속 따뜻한 오두막 - Winter Cozy Cabin
+           ======================================== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+            overflow-x: hidden;
+            background: linear-gradient(180deg, #E3F2FD 0%, #FFEBEE 100%);
+        }
+
+        /* 네비게이션 */
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; padding: 14px 28px;
+            display: flex; justify-content: space-between; align-items: center; z-index: 100;
+            background: rgba(93, 64, 55, 0.95);
+            border-bottom: 4px solid #6D4C41;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+        .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .logo-icon {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, #FFAB91 0%, #FF7043 100%);
+            border: 3px solid #D84315;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+            border-radius: 4px;
+        }
+        .logo-icon i { color: white; font-size: 20px; }
+        .logo-text {
+            font-family: 'Gaegu', cursive;
+            font-size: 26px;
+            color: #FFE0B2;
+            text-shadow: 2px 2px 0 #5D4037;
+            font-weight: 700;
+        }
+        .nav-links { display: flex; gap: 10px; align-items: center; }
+        .nav-link {
+            padding: 12px 18px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(135deg, #8D6E63 0%, #6D4C41 100%);
+            color: white;
+            border-bottom: 3px solid #5D4037;
+            font-family: 'Pretendard', sans-serif;
+            transition: all 0.2s;
+            border-radius: 6px;
+        }
+        .nav-link:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, #A1887F 0%, #8D6E63 100%);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .nav-link-primary {
+            background: linear-gradient(135deg, #FF8A65 0%, #FF7043 100%);
+            border-bottom-color: #E64A19;
+        }
+        .nav-link-primary:hover {
+            background: linear-gradient(135deg, #FFAB91 0%, #FF8A65 100%);
+        }
+        .user-greeting {
+            color: #FFE0B2;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 16px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+        }
+        .user-greeting strong { color: #FFCCBC; }
+
+        /* 히어로 섹션 */
+        .hero {
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 겨울 하늘 */
+        .sky {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 55%;
+            background: linear-gradient(180deg,
+                #B3E5FC 0%,
+                #E1F5FE 30%,
+                #FFCCBC 70%,
+                #FFAB91 100%
+            );
+        }
+
+        /* 눈 내리는 효과 */
+        .snowflakes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 3;
+        }
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            color: white;
+            font-size: 1em;
+            animation: fall linear infinite;
+            opacity: 0.8;
+            text-shadow: 0 0 5px rgba(255,255,255,0.8);
+        }
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
+
+        /* 태양 */
+        .sun {
+            position: absolute;
+            top: 80px;
+            right: 12%;
+            width: 70px;
+            height: 70px;
+            background: radial-gradient(circle, #FFF9C4 0%, #FFD54F 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 40px rgba(255, 235, 59, 0.6), 0 0 80px rgba(255, 193, 7, 0.3);
+            animation: sun-glow 3s ease-in-out infinite;
+            z-index: 2;
+        }
+        @keyframes sun-glow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.9; transform: scale(1.05); }
+        }
+
+        /* 구름 */
+        .clouds { position: absolute; top: 80px; left: 0; right: 0; height: 200px; z-index: 2; }
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 50px;
+            animation: float-cloud 25s ease-in-out infinite;
+        }
+        .cloud::before, .cloud::after { content: ''; position: absolute; background: rgba(255,255,255,0.85); border-radius: 50%; }
+        .cloud-1 { width: 100px; height: 35px; top: 30px; left: 8%; }
+        .cloud-1::before { width: 45px; height: 45px; top: -22px; left: 18px; }
+        .cloud-1::after { width: 55px; height: 55px; top: -28px; left: 45px; }
+        .cloud-2 { width: 130px; height: 40px; top: 70px; left: 55%; animation-delay: -8s; }
+        .cloud-2::before { width: 55px; height: 55px; top: -28px; left: 22px; }
+        .cloud-2::after { width: 65px; height: 65px; top: -32px; left: 60px; }
+        .cloud-3 { width: 90px; height: 32px; top: 110px; left: 30%; animation-delay: -15s; }
+        .cloud-3::before { width: 40px; height: 40px; top: -20px; left: 15px; }
+        .cloud-3::after { width: 48px; height: 48px; top: -24px; left: 42px; }
+        @keyframes float-cloud { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(25px); } }
+
+        /* 눈 덮인 산 - 초록색 + 눈 */
+        .mountains {
+            position: absolute;
+            bottom: 42%;
+            left: 0;
+            right: 0;
+            height: 200px;
+            z-index: 4;
+        }
+        .mountain {
+            position: absolute;
+            bottom: 0;
+            width: 0;
+            height: 0;
+            border-left: 140px solid transparent;
+            border-right: 140px solid transparent;
+            border-bottom: 160px solid #2E7D32;
+        }
+        /* 산 꼭대기에만 작은 흰색 눈 - 꼭짓점(apex)에 위치 */
+        .mountain::before {
+            content: '';
+            position: absolute;
+            top: 0; /* 산 꼭대기(apex)에 위치하도록 top 사용 */
+            left: -18px; /* 중앙 정렬을 위해 조정 */
+            width: 0;
+            height: 0;
+            border-left: 18px solid transparent;
+            border-right: 18px solid transparent;
+            border-bottom: 22px solid #FFFFFF; /* 작은 삼각형 */
+        }
+        /* 산 배치 균형 조정 */
+        .mountain-1 { left: -8%; border-bottom-color: #388E3C; transform: scale(1.1); }
+        .mountain-1::before { border-bottom-color: #F5F5F5; }
+        .mountain-2 { left: 25%; transform: scale(1.3); border-bottom-color: #2E7D32; }
+        .mountain-2::before { border-bottom-color: #FFFFFF; }
+        .mountain-3 { right: -3%; transform: scale(1.05); border-bottom-color: #43A047; }
+        .mountain-3::before { border-bottom-color: #FAFAFA; }
+        .mountain-4 { left: 8%; transform: scale(0.85); border-bottom-color: #4CAF50; }
+        .mountain-4::before { border-bottom-color: #ECEFF1; }
+        .mountain-5 { right: 18%; transform: scale(0.9); border-bottom-color: #388E3C; }
+        .mountain-5::before { border-bottom-color: #F5F5F5; }
+
+        /* 배경 숲 - 다양한 크기와 배치 */
+        .forest-back {
+            position: absolute;
+            bottom: 34%;
+            left: 0;
+            right: 0;
+            height: 280px;
+            z-index: 5;
+        }
+        .tree-back { position: absolute; }
+        .tree-back .leaves {
+            width: 60px;
+            height: 95px;
+            background: linear-gradient(180deg, #2E7D32 0%, #1B5E20 100%);
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            position: relative;
+        }
+        .tree-back .leaves::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70%;
+            height: 18%;
+            background: rgba(255,255,255,0.9);
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+        /* 나무 아래 추가 연두색 삼각형 제거 - display: none 처리 */
+        .tree-back .leaves::before {
+            display: none;
+        }
+        .tree-back .trunk {
+            width: 16px;
+            height: 40px;
+            background: linear-gradient(90deg, #5D4037, #6D4C41, #5D4037);
+            margin: 0 auto;
+            margin-top: -10px;
+        }
+
+        /* 눈 덮인 땅 */
+        .ground {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40%;
+            z-index: 6;
+        }
+        .snow-layer {
+            height: 25px;
+            background: linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%);
+            border-top: 3px solid #FAFAFA;
+            box-shadow: 0 -3px 15px rgba(200, 200, 200, 0.3);
+        }
+        .ice-layer {
+            height: calc(100% - 25px);
+            background: linear-gradient(180deg, #E3F2FD 0%, #BBDEFB 100%);
+        }
+
+        /* 요청4: 냇가(stream) 완전 제거됨 */
+
+        /* 오두막 */
+        .cabin-container {
+            position: absolute;
+            bottom: 34%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+        .cabin { position: relative; width: 280px; height: 200px; }
+
+        /* 지붕 */
+        .cabin-roof {
+            position: absolute;
+            top: 0;
+            left: -30px;
+            width: 0;
+            height: 0;
+            border-left: 170px solid transparent;
+            border-right: 170px solid transparent;
+            border-bottom: 95px solid #8D6E63;
+        }
+        .cabin-roof::before {
+            content: '';
+            position: absolute;
+            top: 25px;
+            left: -145px;
+            width: 0;
+            height: 0;
+            border-left: 145px solid transparent;
+            border-right: 145px solid transparent;
+            border-bottom: 70px solid #A1887F;
+        }
+        /* 요청3: 지붕 눈 - 얇은 라인으로 수정하여 자연스럽게 */
+        .roof-snow {
+            position: absolute;
+            top: 20px; /* 지붕 라인에 붙도록 위치 조정 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 240px;
+            height: 8px; /* 얇은 눈 라인 */
+            background: linear-gradient(90deg, transparent 0%, white 10%, white 90%, transparent 100%);
+            border-radius: 4px;
+            z-index: 1;
+        }
+
+        /* 굴뚝 (요청6: 크기 약 15% 축소) */
+        .chimney {
+            position: absolute;
+            top: -28px; /* 위치 조정 */
+            right: 55px;
+            width: 28px; /* 35px -> 28px */
+            height: 50px; /* 60px -> 50px */
+            background: linear-gradient(180deg, #B0BEC5 0%, #90A4AE 100%);
+            border: 2px solid #78909C; /* 3px -> 2px */
+            z-index: 2;
+        }
+        .chimney::before {
+            content: '';
+            position: absolute;
+            top: -8px; /* 크기에 맞춰 조정 */
+            left: -3px;
+            width: 34px; /* 43px -> 34px */
+            height: 8px; /* 10px -> 8px */
+            background: #CFD8DC;
+        }
+        .chimney-snow {
+            position: absolute;
+            top: -5px;
+            left: -2px;
+            width: 32px; /* 39px -> 32px */
+            height: 5px; /* 6px -> 5px */
+            background: white;
+            border-radius: 2px;
+        }
+        .smoke {
+            position: absolute;
+            top: -55px; /* 굴뚝이 작아져서 위치 보정 */
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px; /* 간격 약간 축소 */
+        }
+        /* 연기 한 덩어리 기본 스타일 */
+        .smoke-puff {
+            width: 18px;               /* 크기 키우기 */
+            height: 18px;
+            background: rgba(180,180,180,0.95);  /* 더 진하게 */
+            border-radius: 50%;
+            animation: smoke-float 1.8s ease-out infinite;  /* 더 빠르게, 자주 */
+        }
+
+        /* 두 번째, 세 번째 연기는 약간씩 크기·타이밍만 다르게 */
+        .smoke-puff:nth-child(2) {
+            animation-delay: 0.4s;
+            width: 22px;
+            height: 22px;
+        }
+        .smoke-puff:nth-child(3) {
+            animation-delay: 0.8s;
+            width: 16px;
+            height: 16px;
+        }
+
+        /* 위로 훨씬 많이 올라가도록 변경 */
+        @keyframes smoke-float {
+            0% {
+                opacity: 0.9;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-80px) scale(2.3);
+            }
+        }
+
+        /* 오두막 본체 */
+        .cabin-body {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 280px;
+            height: 110px;
+            background: linear-gradient(135deg, #D7CCC8 0%, #BCAAA4 50%, #A1887F 100%);
+            border: 4px solid #8D6E63;
+            border-radius: 3px;
+        }
+        .cabin-body::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(90deg, transparent 0px, transparent 44px, rgba(141, 110, 99, 0.25) 44px, rgba(141, 110, 99, 0.25) 46px);
+        }
+
+        /* 문 */
+        .cabin-door {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 75px;
+            background: linear-gradient(180deg, #8D6E63 0%, #6D4C41 100%);
+            border: 3px solid #5D4037;
+            border-radius: 3px 3px 0 0;
+        }
+        .cabin-door::before {
+            content: '';
+            position: absolute;
+            top: 35px;
+            right: 10px;
+            width: 10px;
+            height: 10px;
+            background: radial-gradient(circle, #FFD54F 0%, #FFA000 100%);
+            border: 2px solid #FF8F00;
+            border-radius: 50%;
+        }
+        .door-wreath {
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 18px;
+            height: 18px;
+            border: 3px solid #2E7D32;
+            border-radius: 50%;
+        }
+        .door-wreath::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 5px;
+            height: 5px;
+            background: #E53935;
+            border-radius: 50%;
+        }
+
+        /* 창문 */
+        .cabin-window {
+            position: absolute;
+            top: 25px;
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #FFF9C4 0%, #FFE082 100%);
+            border: 4px solid #6D4C41;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .cabin-window.left { left: 30px; }
+        .cabin-window.right { right: 30px; }
+        .cabin-window::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 4px; background: #6D4C41; transform: translateY(-50%); }
+        .cabin-window::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; background: #6D4C41; transform: translateX(-50%); }
+        .window-light {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(255,249,196,0.9) 0%, rgba(255,224,130,0.6) 100%);
+            animation: light-flicker 4s ease-in-out infinite;
+        }
+        @keyframes light-flicker { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+        .window-snow {
+            position: absolute;
+            top: -4px;
+            left: -2px;
+            right: -2px;
+            height: 6px;
+            background: white;
+            border-radius: 2px;
+        }
+
+        /* 요청2: 눈사람을 집 오른쪽으로 이동 */
+        .snowman {
+            position: absolute;
+            bottom: 33%;
+            left: 62%; /* 집 오른쪽에 배치 */
+            z-index: 11; /* 집과 같거나 높게 */
+        }
+        .snowman-bottom {
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle at 30% 30%, #FFFFFF 0%, #F5F5F5 100%);
+            border-radius: 50%;
+            border: 2px solid rgba(200, 200, 200, 0.4);
+            position: relative;
+        }
+        .snowman-middle {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 32px;
+            height: 32px;
+            background: radial-gradient(circle at 30% 30%, #FFFFFF 0%, #F5F5F5 100%);
+            border-radius: 50%;
+            border: 2px solid rgba(200, 200, 200, 0.4);
+        }
+        .snowman-head {
+            position: absolute;
+            bottom: 55px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 24px;
+            background: radial-gradient(circle at 30% 30%, #FFFFFF 0%, #F5F5F5 100%);
+            border-radius: 50%;
+            border: 2px solid rgba(200, 200, 200, 0.4);
+        }
+        /* 눈사람 눈 */
+        .snowman-eyes {
+            position: absolute;
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 14px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .snowman-eye {
+            width: 4px;
+            height: 4px;
+            background: #212121;
+            border-radius: 50%;
+        }
+        .snowman-nose {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-top: 3px solid transparent;
+            border-bottom: 3px solid transparent;
+            border-left: 10px solid #FF6F00;
+        }
+        .snowman-scarf {
+            position: absolute;
+            bottom: 53px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 28px;
+            height: 5px;
+            background: #E53935;
+            border-radius: 2px;
+        }
+
+        /* 캐릭터들 */
+        .characters {
+            position: absolute;
+            bottom: 33%;
+            left: 0;
+            right: 0;
+            z-index: 11;
+        }
+        .character {
+            width: 28px;
+            height: 48px;
+            position: absolute;
+            animation: walk 0.6s steps(2) infinite;
+        }
+        .char-head {
+            width: 20px; height: 20px;
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            border: 2px solid rgba(0,0,0,0.2); border-radius: 2px;
+        }
+        .char-body {
+            width: 16px; height: 18px;
+            position: absolute; top: 18px; left: 50%; transform: translateX(-50%);
+            border-radius: 2px;
+        }
+        .char-legs {
+            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 2px;
+        }
+        .char-leg { width: 6px; height: 12px; border-radius: 1px; }
+
+        .char-steve .char-head { background: #D4A574; }
+        .char-steve .char-body { background: linear-gradient(180deg, #42A5F5 0%, #1E88E5 100%); }
+        .char-steve .char-leg { background: linear-gradient(180deg, #1565C0 0%, #0D47A1 100%); }
+
+        .char-alex .char-head { background: #E8B89D; }
+        .char-alex .char-body { background: linear-gradient(180deg, #EF5350 0%, #E53935 100%); }
+        .char-alex .char-leg { background: linear-gradient(180deg, #6D4C41 0%, #5D4037 100%); }
+
+        .char-green .char-head { background: #FFB74D; }
+        .char-green .char-body { background: linear-gradient(180deg, #66BB6A 0%, #4CAF50 100%); }
+        .char-green .char-leg { background: linear-gradient(180deg, #5D4037 0%, #4E342E 100%); }
+
+        @keyframes walk { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
+        .character:nth-child(1) { left: 28%; animation-delay: 0s; }
+        .character:nth-child(2) { left: 40%; animation-delay: 0.15s; }
+        .character:nth-child(3) { left: 50%; transform: translateX(-50%); animation: none; bottom: 2%; }
+        .character:nth-child(4) { right: 35%; animation-delay: 0.3s; }
+
+        /* 전경 나무 - 다양한 위치와 크기 */
+        .trees-front {
+            position: absolute;
+            bottom: 28%;
+            left: 0;
+            right: 0;
+            z-index: 8;
+        }
+        .tree-front { position: absolute; }
+        .tree-front .trunk {
+            width: 26px;
+            height: 100px;
+            background: linear-gradient(90deg, #5D4037, #6D4C41, #5D4037);
+            margin: 0 auto;
+            border: 2px solid #4E342E;
+        }
+        .tree-front .leaves-container {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .tree-front .leaves-row { display: flex; justify-content: center; }
+        .tree-front .leaf-block {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #388E3C 0%, #2E7D32 100%);
+            border: 1px solid #1B5E20;
+            margin: 1px;
+        }
+        .tree-front .leaves-container::after {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 75%;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        /* 요청2: 눈사람 옆 크리스마스 트리 스타일 */
+        .tree-front-snowman {
+            position: absolute;
+        }
+        /* 크리스마스 트리 장식(오너먼트) */
+        .tree-front-snowman .ornament {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            z-index: 2;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .tree-front-snowman .ornament-red { background: radial-gradient(circle at 30% 30%, #EF5350, #C62828); }
+        .tree-front-snowman .ornament-gold { background: radial-gradient(circle at 30% 30%, #FFD54F, #FF8F00); }
+        .tree-front-snowman .ornament-blue { background: radial-gradient(circle at 30% 30%, #42A5F5, #1565C0); }
+        /* 트리 꼭대기 별 */
+        .tree-front-snowman .tree-star {
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 10px solid #FFD700;
+            z-index: 3;
+        }
+        .tree-front-snowman .tree-star::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: -6px;
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 10px solid #FFD700;
+        }
+
+        /* 히어로 콘텐츠 */
+        .hero-content {
+            position: relative;
+            z-index: 20;
+            text-align: center;
+            padding: 80px 20px 100px; /* 상단 패딩 축소: 80px -> 50px */
+            margin-top: auto;
+            background: linear-gradient(180deg, transparent 0%, rgba(62, 39, 35, 0.85) 100%);
+        }
+        .hero-badge {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #FFAB91 0%, #FF8A65 100%);
+            color: white;
+            font-family: 'Gaegu', cursive;
+            font-size: 15px;
+            margin-bottom: 50px;
+            border: 3px solid #FF7043;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.3);
+            animation: badge-float 2s ease-in-out infinite;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+        @keyframes badge-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .hero-title {
+            font-family: 'Gaegu', cursive;
+            font-size: 48px;
+            color: #FFF9C4;
+            text-shadow: 3px 3px 0 #5D4037, 3px 3px 15px rgba(255, 160, 122, 0.5);
+            margin-bottom: 25px;
+            line-height: 1.4;
+            font-weight: 700;
+        }
+        .hero-description {
+            font-size: 18px;
+            color: #FFCCBC;
+            line-height: 1.9;
+            margin-bottom: 35px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            font-weight: 500;
+        }
+        .hero-buttons { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; }
+        .btn {
+            padding: 18px 32px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Pretendard', sans-serif;
+            transition: all 0.2s;
+            border-radius: 8px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #FFAB91 0%, #FF8A65 100%);
+            color: white;
+            border-bottom: 5px solid #FF7043;
+            box-shadow: 0 6px 0 #E64A19, 0 8px 15px rgba(0,0,0,0.3);
+        }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #E64A19, 0 11px 20px rgba(0,0,0,0.4); }
+        .btn-secondary {
+            background: linear-gradient(135deg, #A1887F 0%, #8D6E63 100%);
+            color: white;
+            border-bottom: 5px solid #6D4C41;
+            box-shadow: 0 6px 0 #5D4037, 0 8px 15px rgba(0,0,0,0.3);
+        }
+        .btn-secondary:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #5D4037, 0 11px 20px rgba(0,0,0,0.4); }
+
+        /* 특징 섹션 */
+        .features {
+            padding: 80px 20px;
+            background: linear-gradient(180deg, #8D6E63 0%, #6D4C41 100%);
+            border-top: 8px solid #A1887F;
+        }
+        .features-container { max-width: 1100px; margin: 0 auto; }
+        .features-title {
+            text-align: center;
+            font-family: 'Gaegu', cursive;
+            font-size: 36px;
+            color: #FFF9C4;
+            text-shadow: 3px 3px 0 #5D4037;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        .features-subtitle {
+            text-align: center;
+            font-size: 16px;
+            color: #FFCCBC;
+            margin-bottom: 50px;
+            font-weight: 500;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+        }
+        .feature-card {
+            background: linear-gradient(135deg, #BCAAA4 0%, #A1887F 100%);
+            padding: 35px;
+            text-align: center;
+            border: 4px solid #8D6E63;
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            border-radius: 12px;
+        }
+        .feature-card:hover { transform: translate(-4px, -4px); box-shadow: 12px 12px 0 rgba(0,0,0,0.3); }
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            animation: icon-bounce 2s ease-in-out infinite;
+        }
+        .feature-card:nth-child(1) .feature-icon { animation-delay: 0s; }
+        .feature-card:nth-child(2) .feature-icon { animation-delay: 0.2s; }
+        .feature-card:nth-child(3) .feature-icon { animation-delay: 0.4s; }
+        .feature-card:nth-child(4) .feature-icon { animation-delay: 0.6s; }
+        @keyframes icon-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        .feature-title {
+            font-family: 'Gaegu', cursive;
+            font-size: 22px;
+            color: #5D4037;
+            margin-bottom: 12px;
+            line-height: 1.4;
+            font-weight: 700;
+        }
+        .feature-description { font-size: 15px; color: #4E342E; line-height: 1.8; font-weight: 500; }
+
+        /* 푸터 */
+        .footer {
+            padding: 30px 20px;
+            text-align: center;
+            background: linear-gradient(180deg, #5D4037 0%, #4E342E 100%);
+            color: #BCAAA4;
+            font-size: 13px;
+            border-top: 4px solid #6D4C41;
+        }
+        .footer i { color: #FFAB91; margin: 0 4px; }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .navbar { padding: 12px 16px; }
+            .logo-text { font-size: 20px; }
+            .hero-title { font-size: 34px; }
+            .hero-description { font-size: 16px; }
+            .cabin { transform: scale(0.7); }
+            .cabin-container { bottom: 36%; }
+            .nav-link { padding: 10px 12px; font-size: 12px; }
+            .tree-front { transform: scale(0.6) !important; }
+            .tree-back { transform: scale(0.6) !important; }
+            .character { transform: scale(0.8); }
+            .btn { padding: 15px 24px; font-size: 13px; }
+            .snowman { transform: scale(0.7); left: 60%; } /* 모바일에서도 집 오른쪽 유지 */
+            .tree-front-snowman { left: 68% !important; transform: scale(0.55) !important; } /* 눈사람 옆 트리도 조정 */
+            .features-title { font-size: 28px; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo">
+            <div class="logo-icon"><i class="fas fa-home"></i></div>
+            <span class="logo-text">우담</span>
+        </a>
+        <div class="nav-links">
+            <th:block sec:authorize="!isAuthenticated()">
+                <a href="/login" class="nav-link">로그인</a>
+                <a href="/signup" class="nav-link nav-link-primary">회원가입</a>
+            </th:block>
+            <th:block sec:authorize="isAuthenticated()">
+                <span class="user-greeting">🏠 <strong sec:authentication="principal.name">사용자</strong>님</span>
+                <a href="/posts" class="nav-link">게시판</a>
+                <a href="/mypage" class="nav-link">마이페이지</a>
+                <form th:action="@{/logout}" method="post" style="display: inline;">
+                    <button type="submit" class="nav-link">나가기</button>
+                </form>
+            </th:block>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <!-- 하늘 -->
+        <div class="sky"></div>
+
+        <!-- 눈 내리는 효과 -->
+        <div class="snowflakes" aria-hidden="true">
+            <div class="snowflake" style="left: 5%; animation-duration: 10s; animation-delay: 0s;">❅</div>
+            <div class="snowflake" style="left: 15%; animation-duration: 13s; animation-delay: 1s;">❆</div>
+            <div class="snowflake" style="left: 25%; animation-duration: 9s; animation-delay: 2s;">❅</div>
+            <div class="snowflake" style="left: 35%; animation-duration: 14s; animation-delay: 0.5s;">❆</div>
+            <div class="snowflake" style="left: 45%; animation-duration: 11s; animation-delay: 1.5s;">❅</div>
+            <div class="snowflake" style="left: 55%; animation-duration: 10s; animation-delay: 2.5s;">❆</div>
+            <div class="snowflake" style="left: 65%; animation-duration: 12s; animation-delay: 0.8s;">❅</div>
+            <div class="snowflake" style="left: 75%; animation-duration: 11s; animation-delay: 1.8s;">❆</div>
+            <div class="snowflake" style="left: 85%; animation-duration: 13s; animation-delay: 0.3s;">❅</div>
+            <div class="snowflake" style="left: 95%; animation-duration: 10s; animation-delay: 2.2s;">❆</div>
+        </div>
+
+        <div class="sun"></div>
+        <div class="clouds">
+            <div class="cloud cloud-1"></div>
+            <div class="cloud cloud-2"></div>
+            <div class="cloud cloud-3"></div>
+        </div>
+
+        <!-- 산 (초록색 + 눈) - 요청4: 산 2개 추가 -->
+        <div class="mountains">
+            <div class="mountain mountain-1"></div>
+            <div class="mountain mountain-4"></div> <!-- 추가 산 (좌측 보조) -->
+            <div class="mountain mountain-2"></div>
+            <div class="mountain mountain-5"></div> <!-- 추가 산 (우측 보조) -->
+            <div class="mountain mountain-3"></div>
+        </div>
+
+        <!-- 배경 숲 - 요청2: 나무 간격 조정, 오두막 뒤 공간 확보 -->
+        <div class="forest-back">
+            <!-- 왼쪽 영역 - 큰 나무 위주 (더 왼쪽으로 이동) -->
+            <div class="tree-back" style="left: 1%; bottom: 30px; transform: scale(1.3);"><div class="leaves"></div><div class="trunk"></div></div>
+            <div class="tree-back" style="left: 9%; bottom: 0; transform: scale(0.95);"><div class="leaves"></div><div class="trunk"></div></div>
+            <div class="tree-back" style="left: 17%; bottom: 50px; transform: scale(1.15);"><div class="leaves"></div><div class="trunk"></div></div>
+
+            <!-- 중앙 영역 - 오두막 뒤를 피해서 더 벌림 -->
+            <div class="tree-back" style="left: 28%; bottom: 20px; transform: scale(0.85);"><div class="leaves"></div><div class="trunk"></div></div>
+            <div class="tree-back" style="right: 28%; bottom: 40px; transform: scale(1.0);"><div class="leaves"></div><div class="trunk"></div></div>
+
+            <!-- 오른쪽 영역 - 더 오른쪽으로 이동 -->
+            <div class="tree-back" style="right: 17%; bottom: 60px; transform: scale(1.25);"><div class="leaves"></div><div class="trunk"></div></div>
+            <div class="tree-back" style="right: 9%; bottom: 10px; transform: scale(0.9);"><div class="leaves"></div><div class="trunk"></div></div>
+            <div class="tree-back" style="right: 1%; bottom: 35px; transform: scale(1.1);"><div class="leaves"></div><div class="trunk"></div></div>
+        </div>
+
+        <!-- 땅 -->
+        <div class="ground">
+            <div class="snow-layer"></div>
+            <div class="ice-layer"></div>
+        </div>
+
+        <!-- 요청4: 냇가(stream) 제거됨 -->
+
+        <!-- 오두막 -->
+        <div class="cabin-container">
+            <div class="cabin">
+                <div class="chimney">
+                    <div class="chimney-snow"></div>
+                    <div class="smoke">
+                        <div class="smoke-puff"></div>
+                        <div class="smoke-puff"></div>
+                        <div class="smoke-puff"></div>
+                    </div>
+                </div>
+                <div class="cabin-roof">
+                    <div class="roof-snow"></div>
+                </div>
+                <div class="cabin-body">
+                    <div class="cabin-window left">
+                        <div class="window-light"></div>
+                        <div class="window-snow"></div>
+                    </div>
+                    <div class="cabin-window right">
+                        <div class="window-light"></div>
+                        <div class="window-snow"></div>
+                    </div>
+                    <div class="cabin-door">
+                        <div class="door-wreath"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 요청2: 눈사람 - 집 오른쪽으로 이동 -->
+        <div class="snowman">
+            <div class="snowman-bottom"></div>
+            <div class="snowman-middle"></div>
+            <div class="snowman-head">
+                <div class="snowman-eyes">
+                    <div class="snowman-eye"></div>
+                    <div class="snowman-eye"></div>
+                </div>
+                <div class="snowman-nose"></div>
+            </div>
+            <div class="snowman-scarf"></div>
+        </div>
+
+        <!-- 요청2: 눈사람 오른쪽에 크리스마스 트리 - 집 오른쪽으로 이동 -->
+        <div class="tree-front tree-front-snowman" style="left: 66%; bottom: 32%; transform: scale(0.8); z-index: 11;">
+            <div class="leaves-container">
+                <!-- 트리 꼭대기 별 -->
+                <div class="tree-star"></div>
+                <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                <!-- 크리스마스 장식(오너먼트) -->
+                <div class="ornament ornament-red" style="top: 25px; left: 20px;"></div>
+                <div class="ornament ornament-gold" style="top: 35px; left: 55px;"></div>
+                <div class="ornament ornament-blue" style="top: 50px; left: 30px;"></div>
+                <div class="ornament ornament-red" style="top: 55px; left: 70px;"></div>
+                <div class="ornament ornament-gold" style="top: 70px; left: 45px;"></div>
+            </div>
+            <div class="trunk"></div>
+        </div>
+
+        <!-- 캐릭터들 -->
+        <div class="characters">
+            <div class="character char-steve">
+                <div class="char-head"></div>
+                <div class="char-body"></div>
+                <div class="char-legs"><div class="char-leg"></div><div class="char-leg"></div></div>
+            </div>
+            <div class="character char-alex">
+                <div class="char-head"></div>
+                <div class="char-body"></div>
+                <div class="char-legs"><div class="char-leg"></div><div class="char-leg"></div></div>
+            </div>
+            <div class="character char-green">
+                <div class="char-head"></div>
+                <div class="char-body"></div>
+                <div class="char-legs"><div class="char-leg"></div><div class="char-leg"></div></div>
+            </div>
+            <div class="character char-steve">
+                <div class="char-head"></div>
+                <div class="char-body"></div>
+                <div class="char-legs"><div class="char-leg"></div><div class="char-leg"></div></div>
+            </div>
+        </div>
+
+        <!-- 전경 나무 - 요청2: 좌우 끝쪽으로 더 치우치게 배치, 중앙 영역 비움 -->
+        <div class="trees-front">
+            <!-- 왼쪽 큰 나무 (더 왼쪽으로) -->
+            <div class="tree-front" style="left: -1%; transform: scale(1.5);">
+                <div class="leaves-container">
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                </div>
+                <div class="trunk"></div>
+            </div>
+            <!-- 왼쪽 작은 나무 -->
+            <div class="tree-front" style="left: 8%; transform: scale(1.0);">
+                <div class="leaves-container">
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                </div>
+                <div class="trunk"></div>
+            </div>
+            <!-- 왼쪽-중앙 중간 나무 (더 왼쪽으로 이동) -->
+            <div class="tree-front" style="left: 16%; transform: scale(1.25);">
+                <div class="leaves-container">
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                </div>
+                <div class="trunk"></div>
+            </div>
+            <!-- 오른쪽-중앙 중간 나무 (더 오른쪽으로 이동) -->
+            <div class="tree-front" style="right: 16%; transform: scale(1.15);">
+                <div class="leaves-container">
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                </div>
+                <div class="trunk"></div>
+            </div>
+            <!-- 오른쪽 작은 나무 -->
+            <div class="tree-front" style="right: 8%; transform: scale(0.95);">
+                <div class="leaves-container">
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                </div>
+                <div class="trunk"></div>
+            </div>
+            <!-- 오른쪽 큰 나무 (더 오른쪽으로) -->
+            <div class="tree-front" style="right: -1%; transform: scale(1.4);">
+                <div class="leaves-container">
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                    <div class="leaves-row"><div class="leaf-block"></div><div class="leaf-block"></div><div class="leaf-block"></div></div>
+                </div>
+                <div class="trunk"></div>
+            </div>
+        </div>
+
+        <div class="hero-content">
+            <div class="hero-badge">❄️ 따뜻한 겨울 이야기</div>
+            <h1 class="hero-title">오늘 하루<br>어땠어요?</h1>
+            <p class="hero-description">눈 내리는 숲속 오두막에서 동료들과 옹기종기 모여<br>따뜻한 이야기를 나눠보세요 ☕</p>
+            <div class="hero-buttons">
+                <a href="/posts" class="btn btn-primary"><i class="fas fa-door-open"></i> 오두막 들어가기</a>
+                <th:block sec:authorize="!isAuthenticated()">
+                    <a href="/signup" class="btn btn-secondary"><i class="fas fa-user-plus"></i> 이웃 되기</a>
+                </th:block>
+                <th:block sec:authorize="isAuthenticated()">
+                    <a href="/posts/write" class="btn btn-secondary"><i class="fas fa-pen"></i> 이야기 남기기</a>
+                </th:block>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="features-container">
+            <h2 class="features-title">우담에서는요</h2>
+            <p class="features-subtitle">눈 내리는 숲속 오두막에서 동료들과 함께하는 시간</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">💭</div>
+                    <h3 class="feature-title">속 시원한 이야기</h3>
+                    <p class="feature-description">오늘 있었던 일<br>마음껏 털어놓으세요</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🫂</div>
+                    <h3 class="feature-title">따뜻한 공감</h3>
+                    <p class="feature-description">동료들의 따뜻한<br>위로를 받아요</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏡</div>
+                    <h3 class="feature-title">우리끼리만</h3>
+                    <p class="feature-description">안전한 공간에서<br>편하게 이야기해요</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🍵</div>
+                    <h3 class="feature-title">잠깐의 여유</h3>
+                    <p class="feature-description">바쁜 하루 중 잠깐<br>쉬어가세요</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>© 2025 우담 · 눈 내리는 숲속 오두막에서 나누는 우리들의 담소 <i class="fas fa-snowflake"></i></p>
+    </footer>
+</body>
+</html>

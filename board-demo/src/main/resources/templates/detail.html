@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'우담 - ' + ${post.title}">우담 - 상세보기</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+            background: linear-gradient(180deg, #E3F2FD 0%, #FFEBEE 50%, #D7CCC8 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 눈 내리는 효과 */
+        .snowflakes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            color: white;
+            font-size: 1em;
+            animation: fall linear infinite;
+            opacity: 0.7;
+            text-shadow: 0 0 5px rgba(255,255,255,0.8);
+        }
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #BCAAA4 0%, #A1887F 100%);
+            border: 4px solid #8D6E63;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.2);
+            animation: slideUp 0.6s ease-out;
+            position: relative;
+            z-index: 10;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 2px dashed #8D6E63;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #8D6E63 0%, #6D4C41 100%);
+            border: 2px solid #5D4037;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: white;
+            transition: all 0.2s ease;
+            box-shadow: 0 3px 0 #4E342E;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 0 #4E342E;
+        }
+
+        .header-title {
+            font-family: 'Gaegu', cursive;
+            font-size: 24px;
+            font-weight: 700;
+            color: #5D4037;
+        }
+
+        .post-card {
+            background: rgba(255, 255, 255, 0.7);
+            border: 3px solid #8D6E63;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 32px;
+        }
+
+        .post-title {
+            font-family: 'Gaegu', cursive;
+            font-size: 32px;
+            font-weight: 700;
+            color: #5D4037;
+            margin-bottom: 16px;
+            line-height: 1.3;
+        }
+
+        .post-meta {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 2px dashed #A1887F;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #8D6E63;
+            font-weight: 500;
+        }
+
+        .meta-item i {
+            font-size: 12px;
+            color: #A1887F;
+        }
+
+        .post-content {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #5D4037;
+            white-space: pre-wrap;
+            margin-bottom: 32px;
+        }
+
+        .post-image {
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .post-image img {
+            max-width: 100%;
+            max-height: 500px;
+            border-radius: 12px;
+            border: 3px solid #8D6E63;
+            box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .post-image img:hover {
+            transform: scale(1.02);
+        }
+
+        /* 이미지 모달 */
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(93, 64, 55, 0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+        }
+
+        .image-modal.show {
+            display: flex;
+        }
+
+        .image-modal img {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+        }
+
+        .image-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 36px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .image-modal-close:hover {
+            color: #FFAB91;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            padding-top: 20px;
+            border-top: 2px dashed #A1887F;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FFAB91 0%, #FF7043 100%);
+            color: white;
+            border-bottom: 3px solid #E64A19;
+            box-shadow: 0 3px 0 #D84315;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 0 #D84315;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #8D6E63 0%, #6D4C41 100%);
+            color: white;
+            border-bottom: 3px solid #5D4037;
+            box-shadow: 0 3px 0 #4E342E;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 0 #4E342E;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef5350 0%, #c62828 100%);
+            color: white;
+            border-bottom: 3px solid #b71c1c;
+            box-shadow: 0 3px 0 #7f0000;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 0 #7f0000;
+        }
+
+        /* 댓글 섹션 */
+        .comments-section {
+            margin-top: 40px;
+        }
+
+        .section-title {
+            font-family: 'Gaegu', cursive;
+            font-size: 24px;
+            font-weight: 700;
+            color: #5D4037;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .comment-count {
+            background: linear-gradient(135deg, #FFAB91 0%, #FF7043 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: 'Pretendard', sans-serif;
+        }
+
+        .comment-form {
+            background: rgba(255, 255, 255, 0.7);
+            border: 3px solid #8D6E63;
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #5D4037;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 14px;
+            color: #5D4037;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #8D6E63;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .form-control:focus {
+            border-color: #FF7043;
+            box-shadow: 0 0 0 4px rgba(255, 112, 67, 0.2);
+        }
+
+        .form-control::placeholder {
+            color: #A1887F;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .comment-card {
+            background: rgba(255, 255, 255, 0.7);
+            border: 3px solid #8D6E63;
+            border-radius: 14px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .comment-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.1);
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .comment-author {
+            font-weight: 700;
+            color: #5D4037;
+            font-size: 14px;
+        }
+
+        .comment-date {
+            font-size: 12px;
+            color: #A1887F;
+        }
+
+        .comment-content {
+            color: #6D4C41;
+            line-height: 1.6;
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #A1887F;
+        }
+
+        .comment-action-btn {
+            background: none;
+            border: none;
+            color: #8D6E63;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-family: inherit;
+            text-decoration: none;
+        }
+
+        .comment-action-btn:hover {
+            background: rgba(255, 112, 67, 0.15);
+            color: #FF7043;
+        }
+
+        .comment-action-btn.reply-btn {
+            color: #FF7043;
+        }
+
+        .comment-action-btn.edit-btn {
+            color: #8D6E63;
+        }
+
+        .comment-action-btn.delete-btn {
+            color: #ef4444;
+        }
+
+        .comment-action-btn.delete-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* 대댓글 스타일 */
+        .replies-list {
+            margin-top: 16px;
+            padding-left: 24px;
+            border-left: 3px solid #FFAB91;
+        }
+
+        .reply-card {
+            background: rgba(255, 171, 145, 0.15);
+            border: 2px solid #FFAB91;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .reply-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .reply-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #FF7043;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        /* 대댓글 작성 폼 */
+        .reply-form {
+            margin-top: 16px;
+            padding: 16px;
+            background: rgba(255, 171, 145, 0.15);
+            border: 2px solid #FFAB91;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .reply-form.show {
+            display: block;
+        }
+
+        .reply-form .form-group {
+            margin-bottom: 12px;
+        }
+
+        .reply-form .form-label {
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .reply-form .form-control {
+            padding: 10px 14px;
+            font-size: 14px;
+        }
+
+        .reply-form textarea.form-control {
+            min-height: 80px;
+        }
+
+        .reply-form-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .reply-form .btn {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        .btn-cancel {
+            background: linear-gradient(135deg, #8D6E63 0%, #6D4C41 100%);
+            color: white;
+            border: none;
+            border-bottom: 2px solid #5D4037;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            font-weight: 600;
+        }
+
+        .btn-cancel:hover {
+            transform: translateY(-1px);
+        }
+
+        .empty-comments {
+            text-align: center;
+            padding: 40px 20px;
+            color: #8D6E63;
+        }
+
+        .empty-comments i {
+            font-size: 48px;
+            color: #A1887F;
+            margin-bottom: 16px;
+        }
+
+        .empty-comments p {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+            }
+
+            .container {
+                padding: 24px;
+            }
+
+            .post-title {
+                font-size: 26px;
+            }
+
+            .post-meta {
+                flex-wrap: wrap;
+                gap: 16px;
+            }
+
+            .post-actions {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .comment-form {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 눈 내리는 효과 -->
+    <div class="snowflakes" aria-hidden="true">
+        <div class="snowflake" style="left: 5%; animation-duration: 10s; animation-delay: 0s;">❅</div>
+        <div class="snowflake" style="left: 25%; animation-duration: 13s; animation-delay: 1s;">❆</div>
+        <div class="snowflake" style="left: 50%; animation-duration: 9s; animation-delay: 2s;">❅</div>
+        <div class="snowflake" style="left: 75%; animation-duration: 14s; animation-delay: 0.5s;">❆</div>
+        <div class="snowflake" style="left: 95%; animation-duration: 11s; animation-delay: 1.5s;">❅</div>
+    </div>
+
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="header">
+            <a href="/" class="back-btn" title="홈으로">
+                <i class="fas fa-home"></i>
+            </a>
+            <a href="/posts" class="back-btn" title="목록으로">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h1 class="header-title">게시글 상세 📝</h1>
+        </div>
+
+        <!-- 게시글 카드 -->
+        <div class="post-card">
+            <h1 class="post-title" th:text="${post.title}">게시글 제목</h1>
+
+            <div class="post-meta">
+                <div class="meta-item">
+                    <i class="fas fa-user"></i>
+                    <span th:text="${post.author}">작성자</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-calendar"></i>
+                    <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</span>
+                </div>
+                <div class="meta-item" th:if="${post.createdAt != post.updatedAt}">
+                    <i class="fas fa-edit"></i>
+                    <span th:text="${#temporals.format(post.updatedAt, 'yyyy-MM-dd HH:mm')}">수정일</span>
+                </div>
+            </div>
+
+            <!-- 게시글 이미지 -->
+            <div th:if="${post.imagePath != null}" class="post-image">
+                <img th:src="@{'/uploads' + ${post.imagePath}}"
+                     alt="게시글 이미지"
+                     onclick="openImageModal(this.src)">
+            </div>
+
+            <div class="post-content" th:text="${post.content}">
+                게시글 내용이 여기에 표시됩니다.
+            </div>
+
+            <div class="post-actions">
+                <a href="/posts" class="btn btn-secondary">
+                    <i class="fas fa-list"></i>
+                    목록
+                </a>
+                <!-- 수정/삭제는 본인 게시글만 가능 -->
+                <th:block sec:authorize="isAuthenticated()" th:if="${currentUserName != null and currentUserName == post.author}">
+                    <a th:href="@{'/posts/' + ${post.id} + '/edit'}" class="btn btn-secondary">
+                        <i class="fas fa-edit"></i>
+                        수정
+                    </a>
+                    <form th:action="@{'/posts/' + ${post.id} + '/delete'}" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('정말 삭제하시겠습니까?')">
+                            <i class="fas fa-trash"></i>
+                            삭제
+                        </button>
+                    </form>
+                </th:block>
+            </div>
+        </div>
+
+        <!-- 댓글 섹션 -->
+        <div class="comments-section">
+            <h2 class="section-title">
+                <i class="fas fa-comments"></i>
+                댓글
+                <span class="comment-count" th:text="${commentCount}">0</span>
+            </h2>
+
+            <!-- 댓글 작성 폼 (인증된 사용자만) -->
+            <div class="comment-form" sec:authorize="isAuthenticated()">
+                <form th:action="@{'/posts/' + ${post.id} + '/comments'}" th:object="${commentDto}" method="post">
+                    <div class="form-group">
+                        <label for="author" class="form-label">작성자</label>
+                        <input type="text" class="form-control" id="author" name="author"
+                               th:value="${defaultAuthor}"
+                               placeholder="작성자명을 입력하세요" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="content" class="form-label">댓글 내용</label>
+                        <textarea class="form-control" id="content" th:field="*{content}"
+                                  placeholder="댓글을 입력하세요" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i>
+                        댓글 작성
+                    </button>
+                </form>
+            </div>
+
+            <!-- 로그인 유도 (비인증 사용자) -->
+            <div class="comment-form" sec:authorize="!isAuthenticated()">
+                <p style="text-align: center; color: #6D4C41;">
+                    <i class="fas fa-lock" style="margin-right: 8px;"></i>
+                    댓글을 작성하려면 <a href="/login" style="color: #FF7043; font-weight: 700;">로그인</a>이 필요합니다.
+                </p>
+            </div>
+
+            <!-- 댓글 목록 -->
+            <div class="comments-list">
+                <!-- 댓글이 있는 경우 -->
+                <div th:if="${comments != null and !comments.isEmpty()}">
+                    <div th:each="comment : ${comments}" class="comment-card" th:id="'comment-' + ${comment.id}">
+                        <div class="comment-header">
+                            <span class="comment-author" th:text="${comment.author}">댓글 작성자</span>
+                            <span class="comment-date" th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</span>
+                        </div>
+                        <div class="comment-content" th:text="${comment.content}">
+                            댓글 내용이 여기에 표시됩니다.
+                        </div>
+
+                        <!-- 댓글 액션 버튼 (인증된 사용자만) -->
+                        <div class="comment-actions" sec:authorize="isAuthenticated()">
+                            <!-- 답글 버튼은 모든 인증 사용자 -->
+                            <button type="button" class="comment-action-btn reply-btn"
+                                    th:onclick="'toggleReplyForm(' + ${comment.id} + ')'">
+                                <i class="fas fa-reply"></i> 답글
+                            </button>
+                            <!-- 수정/삭제는 본인 댓글만 -->
+                            <th:block th:if="${currentUserName != null and currentUserName == comment.author}">
+                                <a th:href="@{'/comments/' + ${comment.id} + '/edit'}" class="comment-action-btn edit-btn">
+                                    <i class="fas fa-edit"></i> 수정
+                                </a>
+                                <form th:action="@{'/comments/' + ${comment.id} + '/delete'}" method="post" style="display: inline;">
+                                    <button type="submit" class="comment-action-btn delete-btn"
+                                            onclick="return confirm('댓글을 삭제하시겠습니까?')">
+                                        <i class="fas fa-trash"></i> 삭제
+                                    </button>
+                                </form>
+                            </th:block>
+                        </div>
+
+                        <!-- 대댓글 작성 폼 (인증된 사용자만) -->
+                        <div class="reply-form" th:id="'reply-form-' + ${comment.id}" sec:authorize="isAuthenticated()">
+                            <form th:action="@{'/posts/' + ${post.id} + '/comments/' + ${comment.id} + '/reply'}" method="post">
+                                <div class="form-group">
+                                    <label class="form-label">작성자</label>
+                                    <input type="text" class="form-control" name="author"
+                                           th:value="${defaultAuthor}"
+                                           placeholder="작성자명" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">답글 내용</label>
+                                    <textarea class="form-control" name="content"
+                                              placeholder="답글을 입력하세요" required></textarea>
+                                </div>
+                                <div class="reply-form-actions">
+                                    <button type="button" class="btn-cancel"
+                                            th:onclick="'toggleReplyForm(' + ${comment.id} + ')'">취소</button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-paper-plane"></i> 답글 작성
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- 대댓글 목록 -->
+                        <div th:if="${comment.children != null and !comment.children.isEmpty()}" class="replies-list">
+                            <div th:each="reply : ${comment.children}" class="reply-card" th:id="'comment-' + ${reply.id}">
+                                <div class="reply-indicator">
+                                    <i class="fas fa-reply"></i>
+                                    <span th:text="${comment.author}">부모작성자</span>님에게 답글
+                                </div>
+                                <div class="comment-header">
+                                    <span class="comment-author" th:text="${reply.author}">답글 작성자</span>
+                                    <span class="comment-date" th:text="${#temporals.format(reply.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</span>
+                                </div>
+                                <div class="comment-content" th:text="${reply.content}">
+                                    답글 내용이 여기에 표시됩니다.
+                                </div>
+                                <!-- 대댓글 수정/삭제는 본인만 가능 -->
+                                <div class="comment-actions" sec:authorize="isAuthenticated()" th:if="${currentUserName != null and currentUserName == reply.author}">
+                                    <a th:href="@{'/comments/' + ${reply.id} + '/edit'}" class="comment-action-btn edit-btn">
+                                        <i class="fas fa-edit"></i> 수정
+                                    </a>
+                                    <form th:action="@{'/comments/' + ${reply.id} + '/delete'}" method="post" style="display: inline;">
+                                        <button type="submit" class="comment-action-btn delete-btn"
+                                                onclick="return confirm('답글을 삭제하시겠습니까?')">
+                                            <i class="fas fa-trash"></i> 삭제
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 댓글이 없는 경우 -->
+                <div th:if="${comments == null or comments.isEmpty()}" class="empty-comments">
+                    <i class="fas fa-comment-slash"></i>
+                    <p>아직 댓글이 없습니다.</p>
+                    <p>첫 번째 댓글을 작성해보세요! 💬</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 이미지 모달 -->
+    <div class="image-modal" id="imageModal" onclick="closeImageModal()">
+        <span class="image-modal-close" onclick="closeImageModal()">&times;</span>
+        <img id="modalImage" src="" alt="확대 이미지">
+    </div>
+
+    <script>
+        // 대댓글 폼 토글
+        function toggleReplyForm(commentId) {
+            const replyForm = document.getElementById('reply-form-' + commentId);
+            if (replyForm) {
+                replyForm.classList.toggle('show');
+                // 폼이 열릴 때 textarea에 포커스
+                if (replyForm.classList.contains('show')) {
+                    const textarea = replyForm.querySelector('textarea');
+                    if (textarea) {
+                        textarea.focus();
+                    }
+                }
+            }
+        }
+
+        // 이미지 모달 열기
+        function openImageModal(src) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modalImg.src = src;
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 이미지 모달 닫기
+        function closeImageModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+
+        // ESC 키로 모달 닫기
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeImageModal();
+            }
+        });
+    </script>
+</body>
+</html>

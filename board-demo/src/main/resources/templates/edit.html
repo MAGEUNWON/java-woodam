@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>우담 - 글 수정</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+            background: linear-gradient(180deg, #E3F2FD 0%, #FFEBEE 50%, #D7CCC8 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 눈 내리는 효과 */
+        .snowflakes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            color: white;
+            font-size: 1em;
+            animation: fall linear infinite;
+            opacity: 0.7;
+            text-shadow: 0 0 5px rgba(255,255,255,0.8);
+        }
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #BCAAA4 0%, #A1887F 100%);
+            border: 4px solid #8D6E63;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.2);
+            animation: slideUp 0.6s ease-out;
+            position: relative;
+            z-index: 10;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 2px dashed #8D6E63;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #8D6E63 0%, #6D4C41 100%);
+            border: 2px solid #5D4037;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: white;
+            transition: all 0.2s ease;
+            box-shadow: 0 3px 0 #4E342E;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 0 #4E342E;
+        }
+
+        .header-title {
+            font-family: 'Gaegu', cursive;
+            font-size: 28px;
+            font-weight: 700;
+            color: #5D4037;
+        }
+
+        .edit-info {
+            background: rgba(255, 249, 196, 0.6);
+            border: 2px solid #FFB300;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .edit-info i {
+            color: #FFB300;
+            font-size: 18px;
+        }
+
+        .edit-info-text {
+            font-size: 14px;
+            color: #5D4037;
+            font-weight: 500;
+        }
+
+        .edit-form {
+            background: rgba(255, 255, 255, 0.7);
+            border: 3px solid #8D6E63;
+            border-radius: 16px;
+            padding: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 16px;
+            font-weight: 600;
+            color: #5D4037;
+            margin-bottom: 8px;
+        }
+
+        .required {
+            color: #ef4444;
+            margin-left: 4px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 16px;
+            font-weight: 400;
+            color: #5D4037;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #8D6E63;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .form-control:focus {
+            border-color: #FFB300;
+            box-shadow: 0 0 0 4px rgba(255, 179, 0, 0.2);
+        }
+
+        .form-control::placeholder {
+            color: #A1887F;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 300px;
+            line-height: 1.7;
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 12px;
+            color: #8D6E63;
+            margin-top: 8px;
+        }
+
+        /* 현재 이미지 표시 */
+        .current-image {
+            margin-bottom: 16px;
+            padding: 16px;
+            background: rgba(255, 171, 145, 0.2);
+            border: 2px solid #FFAB91;
+            border-radius: 12px;
+        }
+
+        .current-image-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .current-image-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: #FF7043;
+        }
+
+        .delete-image-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #ef4444;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .delete-image-checkbox input {
+            cursor: pointer;
+        }
+
+        .current-image img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 10px;
+            border: 2px solid #8D6E63;
+            box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        /* 이미지 업로드 스타일 */
+        .image-upload-area {
+            position: relative;
+            border: 3px dashed #8D6E63;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: rgba(255, 171, 145, 0.1);
+        }
+
+        .image-upload-area:hover {
+            border-color: #FFB300;
+            background: rgba(255, 171, 145, 0.2);
+        }
+
+        .image-upload-area.dragover {
+            border-color: #FFB300;
+            background: rgba(255, 171, 145, 0.3);
+        }
+
+        .image-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-placeholder {
+            pointer-events: none;
+        }
+
+        .upload-placeholder i {
+            font-size: 48px;
+            color: #FFB300;
+            margin-bottom: 16px;
+        }
+
+        .upload-placeholder p {
+            font-size: 16px;
+            color: #5D4037;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .upload-placeholder span {
+            font-size: 13px;
+            color: #8D6E63;
+        }
+
+        .image-preview {
+            position: relative;
+            display: inline-block;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            border: 3px solid #8D6E63;
+            box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .remove-image-btn {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ef5350 0%, #c62828 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 0 #7f0000;
+            transition: all 0.2s;
+        }
+
+        .remove-image-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 0 #7f0000;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: flex-end;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 2px dashed #8D6E63;
+        }
+
+        .btn {
+            padding: 16px 32px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            min-width: 140px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FFE082 0%, #FFB300 100%);
+            color: #5D4037;
+            border-bottom: 4px solid #FF8F00;
+            box-shadow: 0 4px 0 #E65100;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #E65100;
+        }
+
+        .btn-primary:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #E65100;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #8D6E63 0%, #6D4C41 100%);
+            color: white;
+            border-bottom: 4px solid #5D4037;
+            box-shadow: 0 4px 0 #4E342E;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #4E342E;
+        }
+
+        .original-info {
+            background: rgba(255, 255, 255, 0.5);
+            border: 2px solid #8D6E63;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .original-info-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #5D4037;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .original-info-title i {
+            color: #8D6E63;
+        }
+
+        .original-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+            color: #6D4C41;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .meta-item i {
+            font-size: 11px;
+            color: #8D6E63;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+            }
+
+            .container {
+                padding: 24px;
+            }
+
+            .edit-form {
+                padding: 24px;
+            }
+
+            .header-title {
+                font-size: 22px;
+            }
+
+            .form-actions {
+                flex-direction: column-reverse;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            textarea.form-control {
+                min-height: 200px;
+            }
+
+            .original-meta {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+
+        /* 로딩 애니메이션 */
+        .btn-primary.loading {
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 눈 내리는 효과 -->
+    <div class="snowflakes" aria-hidden="true">
+        <div class="snowflake" style="left: 10%; animation-duration: 10s; animation-delay: 0s;">❅</div>
+        <div class="snowflake" style="left: 30%; animation-duration: 13s; animation-delay: 1s;">❆</div>
+        <div class="snowflake" style="left: 50%; animation-duration: 9s; animation-delay: 2s;">❅</div>
+        <div class="snowflake" style="left: 70%; animation-duration: 14s; animation-delay: 0.5s;">❆</div>
+        <div class="snowflake" style="left: 90%; animation-duration: 11s; animation-delay: 1.5s;">❅</div>
+    </div>
+
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="header">
+            <a th:href="@{'/posts/' + ${post.id}}" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h1 class="header-title">이야기 수정 📝</h1>
+        </div>
+
+        <!-- 수정 안내 -->
+        <div class="edit-info">
+            <i class="fas fa-edit"></i>
+            <span class="edit-info-text">기존 게시글을 수정하고 있습니다. 변경사항은 저장 후 반영됩니다.</span>
+        </div>
+
+        <!-- 원본 정보 -->
+        <div class="original-info">
+            <div class="original-info-title">
+                <i class="fas fa-info-circle"></i>
+                원본 게시글 정보
+            </div>
+            <div class="original-meta">
+                <div class="meta-item">
+                    <i class="fas fa-user"></i>
+                    <span>작성자: <span th:text="${post.author}">작성자</span></span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>작성일: <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</span></span>
+                </div>
+                <div class="meta-item" th:if="${post.createdAt != post.updatedAt}">
+                    <i class="fas fa-edit"></i>
+                    <span>최근 수정: <span th:text="${#temporals.format(post.updatedAt, 'yyyy-MM-dd HH:mm')}">수정일</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 수정 폼 -->
+        <div class="edit-form">
+            <form th:action="@{'/posts/' + ${post.id} + '/edit'}" method="post" id="editForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="title" class="form-label">
+                        제목 <span class="required">*</span>
+                    </label>
+                    <input type="text"
+                           class="form-control"
+                           id="title"
+                           name="title"
+                           th:value="${post.title}"
+                           placeholder="게시글 제목을 입력하세요"
+                           maxlength="200"
+                           required>
+                    <div class="char-count">
+                        <span id="titleCount">0</span> / 200자
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="content" class="form-label">
+                        내용 <span class="required">*</span>
+                    </label>
+                    <textarea class="form-control"
+                              id="content"
+                              name="content"
+                              placeholder="게시글 내용을 입력하세요"
+                              maxlength="5000"
+                              required th:text="${post.content}"></textarea>
+                    <div class="char-count">
+                        <span id="contentCount">0</span> / 5000자
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="image" class="form-label">
+                        이미지 <span style="color: #8D6E63; font-weight: normal;">(선택)</span>
+                    </label>
+
+                    <!-- 기존 이미지가 있는 경우 -->
+                    <div th:if="${post.imagePath != null}" class="current-image" id="currentImage">
+                        <div class="current-image-header">
+                            <span class="current-image-label">📷 현재 이미지</span>
+                            <label class="delete-image-checkbox">
+                                <input type="checkbox" name="deleteImage" value="true" id="deleteImageCheckbox">
+                                <span>이미지 삭제</span>
+                            </label>
+                        </div>
+                        <img th:src="@{'/uploads' + ${post.imagePath}}" alt="현재 이미지">
+                    </div>
+
+                    <div class="image-upload-area" id="imageUploadArea">
+                        <input type="file"
+                               class="image-input"
+                               id="image"
+                               name="image"
+                               accept="image/jpeg,image/png,image/gif,image/webp"
+                               onchange="previewImage(this)">
+                        <div class="upload-placeholder" id="uploadPlaceholder">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p th:text="${post.imagePath != null} ? '새 이미지로 교체하려면 클릭하세요' : '클릭하거나 이미지를 드래그하세요'">클릭하거나 이미지를 드래그하세요</p>
+                            <span>JPG, PNG, GIF, WEBP (최대 10MB)</span>
+                        </div>
+                        <div class="image-preview" id="imagePreview" style="display: none;">
+                            <img id="previewImg" src="" alt="미리보기">
+                            <button type="button" class="remove-image-btn" onclick="removeImage()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a th:href="@{'/posts/' + ${post.id}}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i>
+                        취소
+                    </a>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <i class="fas fa-save"></i>
+                        수정 완료
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 글자 수 카운터
+        function updateCharCount(inputId, countId, maxLength) {
+            const input = document.getElementById(inputId);
+            const counter = document.getElementById(countId);
+
+            // 초기 글자 수 설정
+            counter.textContent = input.value.length;
+
+            input.addEventListener('input', function() {
+                const currentLength = this.value.length;
+                counter.textContent = currentLength;
+
+                // 글자 수 제한 근처에서 색상 변경
+                if (currentLength > maxLength * 0.9) {
+                    counter.style.color = '#ef4444';
+                } else if (currentLength > maxLength * 0.7) {
+                    counter.style.color = '#FFB300';
+                } else {
+                    counter.style.color = '#8D6E63';
+                }
+            });
+        }
+
+        // 각 입력 필드에 글자 수 카운터 적용
+        updateCharCount('title', 'titleCount', 200);
+        updateCharCount('content', 'contentCount', 5000);
+
+        // 원본 값 저장 (변경사항 감지용)
+        const originalTitle = document.getElementById('title').value;
+        const originalContent = document.getElementById('content').value;
+
+        // 폼 제출 처리
+        document.getElementById('editForm').addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('submitBtn');
+            const title = document.getElementById('title').value.trim();
+            const content = document.getElementById('content').value.trim();
+
+            // 유효성 검사
+            if (!title || !content) {
+                e.preventDefault();
+                alert('제목과 내용을 모두 입력해주세요.');
+                return;
+            }
+
+            // 변경사항 확인
+            if (title === originalTitle && content === originalContent) {
+                e.preventDefault();
+                alert('변경된 내용이 없습니다.');
+                return;
+            }
+
+            // 제출 버튼 로딩 상태
+            submitBtn.classList.add('loading');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 수정 중...';
+            submitBtn.disabled = true;
+        });
+
+        // 페이지 이탈 경고
+        let hasUnsavedChanges = false;
+        const inputs = ['title', 'content'];
+
+        inputs.forEach(id => {
+            document.getElementById(id).addEventListener('input', function() {
+                const currentTitle = document.getElementById('title').value;
+                const currentContent = document.getElementById('content').value;
+
+                hasUnsavedChanges = (currentTitle !== originalTitle || currentContent !== originalContent);
+            });
+        });
+
+        window.addEventListener('beforeunload', function(e) {
+            if (hasUnsavedChanges) {
+                e.preventDefault();
+                e.returnValue = '수정 중인 내용이 있습니다. 페이지를 떠나시겠습니까?';
+            }
+        });
+
+        // 폼 제출 시 경고 해제
+        document.getElementById('editForm').addEventListener('submit', function() {
+            hasUnsavedChanges = false;
+        });
+
+        // 이미지 미리보기
+        function previewImage(input) {
+            const preview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            const placeholder = document.getElementById('uploadPlaceholder');
+
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+
+                // 파일 크기 체크 (10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('파일 크기는 10MB를 초과할 수 없습니다.');
+                    input.value = '';
+                    return;
+                }
+
+                // 파일 타입 체크
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('JPG, PNG, GIF, WEBP 형식의 이미지만 업로드 가능합니다.');
+                    input.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    preview.style.display = 'inline-block';
+                    placeholder.style.display = 'none';
+                    hasUnsavedChanges = true;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 이미지 제거
+        function removeImage() {
+            const input = document.getElementById('image');
+            const preview = document.getElementById('imagePreview');
+            const placeholder = document.getElementById('uploadPlaceholder');
+
+            input.value = '';
+            preview.style.display = 'none';
+            placeholder.style.display = 'block';
+        }
+
+        // 드래그 앤 드롭
+        const uploadArea = document.getElementById('imageUploadArea');
+
+        if (uploadArea) {
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+                const input = document.getElementById('image');
+                input.files = e.dataTransfer.files;
+                previewImage(input);
+            });
+        }
+    </script>
+</body>
+</html>

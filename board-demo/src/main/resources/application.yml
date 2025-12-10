@@ -1,0 +1,59 @@
+# Spring Boot 애플리케이션 설정
+spring:
+  # 애플리케이션 이름
+  application:
+    name: board-demo
+
+  # 파일 업로드 설정
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+  # 데이터베이스 설정 (PostgreSQL)
+  datasource:
+    url: jdbc:postgresql://localhost:5433/boarddb  # 포트 5433 사용 (기존 DB와 충돌 방지)
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: postgres
+
+  # JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: update  # 기존 데이터 유지, 스키마 변경 시 자동 업데이트
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        show_sql: true
+    show-sql: true
+
+  # Thymeleaf 설정
+  thymeleaf:
+    cache: false  # 개발 시 템플릿 캐시 비활성화
+    encoding: UTF-8
+    prefix: classpath:/templates/
+    suffix: .html
+
+# 서버 설정
+server:
+  port: 8080
+  servlet:
+    context-path: /
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+# 로깅 설정
+logging:
+  level:
+    com.example.board: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+# 파일 업로드 경로 설정
+file:
+  upload-dir: uploads
