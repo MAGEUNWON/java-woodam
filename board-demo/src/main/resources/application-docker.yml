@@ -3,9 +3,9 @@
 
 spring:
   datasource:
-    url: jdbc:postgresql://postgres:5432/boarddb
-    username: 
-    password: 
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/boarddb}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD} 
 
   jpa:
     hibernate:

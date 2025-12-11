@@ -50,3 +50,8 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+// bootRun 기본 프로파일 설정
+bootRun {
+    systemProperty 'spring.profiles.active', 'local'
+}

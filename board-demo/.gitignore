@@ -1,4 +1,5 @@
 # 민감정보 관리 (DB 연결 등)
 /src/main/resources/application.yml
 /src/main/resources/application-docker.yml
+/src/main/resources/application-local.yml
 .env

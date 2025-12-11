@@ -15,8 +15,8 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5433/boarddb  # 포트 5433 사용 (기존 DB와 충돌 방지)
     driver-class-name: org.postgresql.Driver
-    username: 
-    password: 
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD} 
 
   # JPA 설정
   jpa:
